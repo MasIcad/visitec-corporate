@@ -4,8 +4,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-6">
         <span className="text-xl font-bold text-brand-dark">VISITEC</span>
         <div className="flex gap-6 text-sm font-medium">
-          <a href="/">Home</a>
-          <a href="/blog">Blog</a>
+          <a href="/" className="hover:text-brand-primary transition-colors">Home</a>
+          <a href="/products" className="hover:text-brand-primary transition-colors">Daftar Produk</a> {/* Tambahkan ini */}
+          <a href="/blog" className="hover:text-brand-primary transition-colors">Insights</a>
         </div>
       </div>
     </nav>

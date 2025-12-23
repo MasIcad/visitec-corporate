@@ -61,7 +61,7 @@ export default function HomePage() {
               <Reveal key={i}>
                 <div className="group relative bg-white p-12 rounded-4xl border border-slate-200 transition-all duration-500 hover:-translate-y-4">
                   {/* Hover Background Effect */}
-                  <div className="absolute inset-0 bg-brand-dark scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500 rounded-[2rem] z-0" />
+                  <div className="absolute inset-0 bg-brand-dark scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500 rounded-4xl z-0" />
                   
                   <div className="relative z-10">
                     <div className="text-4xl font-black text-slate-100 group-hover:text-white/10 transition-colors mb-8">
@@ -77,6 +77,29 @@ export default function HomePage() {
                 </div>
               </Reveal>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section className="py-32 px-6 bg-brand-dark text-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-16">
+            <h2 className="text-sm font-bold text-brand-primary uppercase tracking-[0.4em] mb-4">Gallery</h2>
+            <h3 className="text-4xl font-bold italic">OUR WORK IN ACTION</h3>
+          </div>
+          
+          <div className="columns-1 md:columns-3 gap-6 space-y-6">
+            {/* Kamu bisa fetch data dari tabel 'gallery' di sini */}
+            <Reveal>
+              <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80" className="rounded-3xl hover:opacity-80 transition-opacity" alt="Work 1" />
+            </Reveal>
+            <Reveal>
+              <img src="https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80" className="rounded-3xl hover:opacity-80 transition-opacity" alt="Work 2" />
+            </Reveal>
+            <Reveal>
+              <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80" className="rounded-3xl hover:opacity-80 transition-opacity" alt="Work 3" />
+            </Reveal>
           </div>
         </div>
       </section>
