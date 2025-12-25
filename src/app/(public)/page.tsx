@@ -1,23 +1,24 @@
-// 1. Tambahkan baris ini agar data selalu diperbarui (tidak tersangkut cache)
+// 1. Tetap memaksa data selalu diperbarui
 export const dynamic = 'force-dynamic'
 
-import { supabase } from '@/lib/supabase' // Pastikan path lib ini benar
+// Perbaikan path import sesuai struktur folder di image_e03028
+import { supabase } from '@/lib/supabase' 
 import HeroSlider from '@/components/layout/HeroSlider'
 import Reveal from '@/components/layout/Reveal'
 
 export default async function HomePage() {
-  // 2. Fetch data Gallery dari tabel 'gallery' yang Anda buat di SQL
+  // 2. Fetch data Gallery
   const { data: galleryItems } = await supabase
     .from('gallery')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(6); // Mengambil 6 foto terbaru
+    .limit(10); // Kita ambil sedikit lebih banyak untuk slider
 
   return (
     <main className="bg-white">
       <HeroSlider />
 
-      {/* Poin 3: About Overview (Logika asli tetap sama) */}
+      {/* Section About Overview (Tetap sama) */}
       <section className="py-32 px-6">
         <div className="max-w-7xl mx-auto">
           <Reveal>
@@ -46,7 +47,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Business Units Section (Logika asli tetap sama) */}
+      {/* Section Expertise (Tetap sama) */}
       <section className="bg-slate-50 py-32 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <Reveal>
@@ -90,37 +91,43 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Gallery Section - SEKARANG DYNAMIC MENGGUNAKAN DATA SUPABASE */}
-      <section className="py-32 px-6 bg-brand-dark text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16">
-            <h2 className="text-sm font-bold text-brand-primary uppercase tracking-[0.4em] mb-4">Gallery</h2>
-            <h3 className="text-4xl font-bold italic uppercase tracking-tighter">Our Work In Action</h3>
-          </div>
-          
-          <div className="columns-1 md:columns-3 gap-6 space-y-6">
-            {/* 3. Mapping data dari database Supabase */}
-            {galleryItems && galleryItems.length > 0 ? (
-              galleryItems.map((item) => (
-                <Reveal key={item.id}>
-                  <div className="group relative overflow-hidden rounded-3xl border border-white/10">
+      {/* Gallery Section - UPDATE: SLIDER HORIZONTAL */}
+      <section className="py-32 bg-brand-dark text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 mb-16">
+          <h2 className="text-sm font-bold text-brand-primary uppercase tracking-[0.4em] mb-4">Gallery</h2>
+          <h3 className="text-4xl font-bold italic uppercase tracking-tighter">Our Work In Action</h3>
+        </div>
+        
+        {/* Container Slider: Menggunakan snap-x agar berhenti pas di tengah foto */}
+        <div className="flex gap-6 overflow-x-auto px-6 md:px-[calc((100vw-1280px)/2)] scrollbar-hide snap-x snap-mandatory pb-10">
+          {galleryItems && galleryItems.length > 0 ? (
+            galleryItems.map((item) => (
+              <div 
+                key={item.id} 
+                className="shrink-0 w-[85vw] md:w-112.5 snap-center"
+              >
+                <Reveal>
+                  <div className="group relative aspect-4/3 overflow-hidden rounded-3xl border border-white/10">
                     <img 
                       src={item.image_url} 
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                       alt={item.title || "Visitec Project"} 
                     />
-                    {/* Overlay judul saat hover */}
                     <div className="absolute inset-0 bg-brand-dark/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6 text-center">
                        <p className="font-bold text-lg uppercase tracking-widest">{item.title}</p>
                     </div>
                   </div>
                 </Reveal>
-              ))
-            ) : (
-              // Tampilan fallback jika data kosong
-              <p className="text-slate-500 italic">No gallery items uploaded yet.</p>
-            )}
-          </div>
+              </div>
+            ))
+          ) : (
+            <div className="w-full px-6 italic text-slate-500">No gallery items yet.</div>
+          )}
+        </div>
+
+        {/* Info navigasi sederhana */}
+        <div className="max-w-7xl mx-auto px-6">
+          <p className="text-xs text-slate-500 mt-4 tracking-widest">SCROLL TO EXPLORE →</p>
         </div>
       </section>
     </main>
