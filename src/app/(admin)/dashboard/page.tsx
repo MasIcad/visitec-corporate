@@ -17,16 +17,17 @@ export default function DashboardPage() {
   
   // Form States
   const [prodForm, setProdForm] = useState({ name: '', desc: '', price: '', file: null as File | null });
-  // Perubahan: 'files' sekarang menjadi array untuk menampung banyak foto artikel
   const [postForm, setPostForm] = useState({ title: '', content: '', files: [] as File[] });
   const [gallForm, setGallForm] = useState({ title: '', file: null as File | null });
 
   useEffect(() => { fetchData(); }, []);
 
   async function fetchData() {
+    // Mengambil data dari tabel yang sudah dibuat di SQL Editor
     const { data: postsData } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
     const { data: prodData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
     const { data: gallData } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
+    
     if (postsData) setPosts(postsData);
     if (prodData) setProducts(prodData);
     if (gallData) setGallery(gallData);
@@ -36,7 +37,7 @@ export default function DashboardPage() {
   const uploadToStorage = async (file: File, folder: string) => {
     const fileName = `${Date.now()}-${file.name}`;
     const filePath = `${folder}/${fileName}`;
-    const { error } = await supabase.storage.from('visitec-assets').upload(filePath, file);
+    const { error } = await supabase.storage.from('visitec-assets').upload(filePath, file); // Menggunakan bucket visitec-assets
     if (error) throw error;
     return supabase.storage.from('visitec-assets').getPublicUrl(filePath).data.publicUrl;
   };
@@ -47,8 +48,6 @@ export default function DashboardPage() {
     setLoading(true);
     try {
       const imageUrls: string[] = [];
-      
-      // Proses upload semua foto yang dipilih satu per satu
       if (postForm.files.length > 0) {
         for (const file of postForm.files) {
           const url = await uploadToStorage(file, 'blog');
@@ -56,19 +55,14 @@ export default function DashboardPage() {
         }
       }
       
-      // Simpan ke tabel 'posts'. Foto pertama jadi cover, sisanya masuk ke array JSONB
       await supabase.from('posts').insert([{ 
         title: postForm.title, 
-        content: {
-          body: postForm.content,
-          gallery: imageUrls // Menyimpan array URL foto di kolom JSONB 'content'
-        }, 
-        image_url: imageUrls[0] || '', // Foto pertama otomatis jadi cover
-        slug: postForm.title.toLowerCase().replace(/ /g, '-'),
-        author_id: (await supabase.auth.getUser()).data.user?.id // Menghubungkan ke ID Admin
+        content: { body: postForm.content, gallery: imageUrls }, // Simpan array ke JSONB
+        image_url: imageUrls[0] || '',
+        slug: postForm.title.toLowerCase().replace(/ /g, '-')
       }]);
 
-      alert('Artikel dengan Galeri Foto Berhasil Dipublish!');
+      alert('Artikel Berhasil Dipublish!');
       setPostForm({ title: '', content: '', files: [] });
       fetchData();
     } catch (err: any) { alert(err.message); }
@@ -88,6 +82,21 @@ export default function DashboardPage() {
       }]);
       alert('Produk Berhasil Ditambahkan!');
       setProdForm({ name: '', desc: '', price: '', file: null });
+      fetchData();
+    } catch (err: any) { alert(err.message); }
+    finally { setLoading(false); }
+  };
+
+  // --- HANDLER: TAMBAH GALLERY (FITUR BARU) ---
+  const handleAddGallery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!gallForm.file) return alert('Pilih foto gallery!');
+    setLoading(true);
+    try {
+      const url = await uploadToStorage(gallForm.file, 'gallery');
+      await supabase.from('gallery').insert([{ title: gallForm.title, image_url: url }]);
+      alert('Berhasil ditambahkan ke Gallery!');
+      setGallForm({ title: '', file: null });
       fetchData();
     } catch (err: any) { alert(err.message); }
     finally { setLoading(false); }
@@ -118,7 +127,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 1. TAB INSIGHTS: TULIS ARTIKEL + BANYAK FOTO */}
+      {/* 1. TAB INSIGHTS: TULIS ARTIKEL */}
       {activeTab === 'insight' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-2">
@@ -127,61 +136,34 @@ export default function DashboardPage() {
               <form onSubmit={handleAddPost} className="space-y-6">
                 <input type="text" placeholder="Judul Artikel" required className="w-full p-5 bg-slate-50 rounded-2xl outline-none text-xl font-bold" value={postForm.title} onChange={e => setPostForm({...postForm, title: e.target.value})} />
                 <textarea placeholder="Mulai menulis konten di sini..." required className="w-full p-5 bg-slate-50 rounded-2xl outline-none h-80 resize-none" value={postForm.content} onChange={e => setPostForm({...postForm, content: e.target.value})} />
-                
-                {/* Multi-photo Upload */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
-                    <input 
-                      type="file" id="postImgs" multiple hidden 
-                      onChange={e => {
-                        const selectedFiles = Array.from(e.target.files || []);
-                        setPostForm({...postForm, files: [...postForm.files, ...selectedFiles]});
-                      }} 
-                    />
-                    <label htmlFor="postImgs" className="flex-1 p-4 border-2 border-dashed border-slate-200 rounded-2xl text-center cursor-pointer hover:bg-slate-50 transition-all font-bold text-slate-400">
-                      📸 Pilih Banyak Foto untuk Galeri Artikel
-                    </label>
+                    <input type="file" id="postImgs" multiple hidden onChange={e => setPostForm({...postForm, files: [...postForm.files, ...Array.from(e.target.files || [])]})} />
+                    <label htmlFor="postImgs" className="flex-1 p-4 border-2 border-dashed border-slate-200 rounded-2xl text-center cursor-pointer font-bold text-slate-400">📸 Pilih Banyak Foto Galeri Artikel</label>
                   </div>
-                  
-                  {/* Preview Foto yang Akan Diupload */}
                   <div className="flex flex-wrap gap-2">
                     {postForm.files.map((file, idx) => (
-                      <div key={idx} className="relative w-20 h-20 bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                      <div key={idx} className="relative w-20 h-20 bg-slate-100 rounded-xl overflow-hidden border">
                         <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" />
-                        <button 
-                          type="button"
-                          onClick={() => setPostForm({...postForm, files: postForm.files.filter((_, i) => i !== idx)})}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5"
-                        >
-                          <X size={12} />
-                        </button>
+                        <button type="button" onClick={() => setPostForm({...postForm, files: postForm.files.filter((_, i) => i !== idx)})} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5"><X size={12} /></button>
                       </div>
                     ))}
                   </div>
                 </div>
-
-                <button disabled={loading} className="w-full py-5 bg-brand-primary text-white font-bold rounded-2xl shadow-lg flex items-center justify-center gap-2">
-                  {loading ? <Loader2 className="animate-spin" /> : <Save />} Publish Artikel & Galeri
-                </button>
+                <button disabled={loading} className="w-full py-5 bg-brand-primary text-white font-bold rounded-2xl shadow-lg flex items-center justify-center gap-2">{loading ? <Loader2 className="animate-spin" /> : <Save />} Publish Artikel</button>
               </form>
             </div>
           </div>
-          
-          <div className="lg:col-span-1">
-            <h3 className="text-xl font-bold mb-6 text-brand-dark italic">ARTIKEL TERBARU</h3>
-            <div className="space-y-4">
-              {posts.map(post => (
-                <div key={post.id} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                  <img src={post.image_url} className="w-12 h-12 rounded-xl object-cover" />
-                  <p className="font-bold text-xs truncate">{post.title}</p>
-                </div>
-              ))}
-            </div>
+          <div className="lg:col-span-1 space-y-4">
+            <h3 className="font-bold text-brand-dark">ARTIKEL TERBARU</h3>
+            {posts.map(post => (
+              <div key={post.id} className="p-4 bg-white rounded-2xl border flex items-center gap-4"><img src={post.image_url} className="w-12 h-12 rounded-xl object-cover" /><p className="font-bold text-xs truncate">{post.title}</p></div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* 2. TAB PRODUK: TAMBAH & DESKRIPSI */}
+      {/* 2. TAB PRODUK */}
       {activeTab === 'products' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-1">
@@ -189,38 +171,52 @@ export default function DashboardPage() {
               <h2 className="text-2xl font-bold mb-8">Tambah Produk</h2>
               <form onSubmit={handleAddProduct} className="space-y-5">
                 <input type="text" placeholder="Nama Produk" required className="w-full p-4 bg-slate-50 rounded-2xl outline-none" value={prodForm.name} onChange={e => setProdForm({...prodForm, name: e.target.value})} />
-                <input type="number" placeholder="Harga (IDR)" required className="w-full p-4 bg-slate-50 rounded-2xl outline-none" value={prodForm.price} onChange={e => setProdForm({...prodForm, price: e.target.value})} />
-                <textarea placeholder="Deskripsi Lengkap Produk..." required className="w-full p-4 bg-slate-50 rounded-2xl outline-none h-32" value={prodForm.desc} onChange={e => setProdForm({...prodForm, desc: e.target.value})} />
-                <div className="border-2 border-dashed border-slate-200 p-6 rounded-2xl text-center">
-                  <input type="file" id="prodFile" hidden onChange={e => setProdForm({...prodForm, file: e.target.files?.[0] || null})} />
-                  <label htmlFor="prodFile" className="cursor-pointer text-sm font-bold text-slate-400">
-                    {prodForm.file ? prodForm.file.name : "+ Upload Gambar Produk"}
-                  </label>
-                </div>
-                <button disabled={loading} className="w-full py-4 bg-brand-primary text-white font-bold rounded-2xl shadow-lg flex justify-center items-center gap-2">
-                  {loading ? <Loader2 className="animate-spin" /> : <Plus />} Publish Produk
-                </button>
+                <input type="number" placeholder="Harga" required className="w-full p-4 bg-slate-50 rounded-2xl outline-none" value={prodForm.price} onChange={e => setProdForm({...prodForm, price: e.target.value})} />
+                <textarea placeholder="Deskripsi..." required className="w-full p-4 bg-slate-50 rounded-2xl outline-none h-32" value={prodForm.desc} onChange={e => setProdForm({...prodForm, desc: e.target.value})} />
+                <input type="file" id="prodFile" hidden onChange={e => setProdForm({...prodForm, file: e.target.files?.[0] || null})} />
+                <label htmlFor="prodFile" className="block p-4 border-2 border-dashed border-slate-200 rounded-2xl text-center cursor-pointer text-slate-400 font-bold">{prodForm.file ? prodForm.file.name : "+ Upload Gambar"}</label>
+                <button disabled={loading} className="w-full py-4 bg-brand-primary text-white font-bold rounded-2xl">{loading ? <Loader2 className="animate-spin" /> : <Plus />} Publish Produk</button>
               </form>
             </div>
           </div>
-          <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-xl font-bold text-brand-dark italic uppercase">Katalog Produk Visitec</h3>
-            <div className="grid grid-cols-1 gap-4">
-              {products.map(p => (
-                <div key={p.id} className="bg-white p-5 rounded-3xl border border-slate-100 flex justify-between items-center shadow-sm">
-                  <div className="flex gap-5 items-center">
-                    <img src={p.image_url} className="w-20 h-20 rounded-2xl object-cover" />
-                    <div><h4 className="font-bold text-brand-dark">{p.name}</h4><p className="text-brand-primary font-black text-sm">Rp {Number(p.price).toLocaleString('id-ID')}</p></div>
-                  </div>
-                  <button onClick={async () => {
-                    if(confirm('Hapus produk?')) {
-                      await supabase.from('products').delete().eq('id', p.id);
-                      fetchData();
-                    }
-                  }} className="p-3 text-red-400 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={20} /></button>
+          <div className="lg:col-span-2 space-y-4">
+            {products.map(p => (
+              <div key={p.id} className="bg-white p-5 rounded-3xl border flex justify-between items-center shadow-sm">
+                <div className="flex gap-5 items-center"><img src={p.image_url} className="w-20 h-20 rounded-2xl object-cover" /><div><h4 className="font-bold text-lg">{p.name}</h4><p className="text-brand-primary font-black">Rp {Number(p.price).toLocaleString('id-ID')}</p></div></div>
+                <button onClick={async () => { if(confirm('Hapus?')) { await supabase.from('products').delete().eq('id', p.id); fetchData(); } }} className="p-4 text-red-400 hover:bg-red-50 rounded-2xl"><Trash2 size={22} /></button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3. TAB GALLERY: ADD GALLERY (TERPASANG KEMBALI) */}
+      {activeTab === 'gallery' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="lg:col-span-1">
+            <div className="bg-white p-8 rounded-4xl shadow-xl border border-slate-100">
+              <h2 className="text-2xl font-bold mb-8">Add to Gallery</h2>
+              <form onSubmit={handleAddGallery} className="space-y-6">
+                <input type="text" placeholder="Judul Proyek" required className="w-full p-4 bg-slate-50 rounded-2xl outline-none" value={gallForm.title} onChange={e => setGallForm({...gallForm, title: e.target.value})} />
+                <div className="border-2 border-dashed border-slate-200 p-10 rounded-3xl text-center">
+                  <input type="file" id="gallFile" hidden onChange={e => setGallForm({...gallForm, file: e.target.files?.[0] || null})} />
+                  <label htmlFor="gallFile" className="cursor-pointer flex flex-col items-center gap-3 text-slate-400 font-bold">
+                    <ImageIcon size={40} /> {gallForm.file ? gallForm.file.name : "Pilih Foto Pekerjaan"}
+                  </label>
                 </div>
-              ))}
+                <button disabled={loading} className="w-full py-4 bg-brand-primary text-white font-bold rounded-2xl shadow-lg">{loading ? <Loader2 className="animate-spin" /> : "Upload ke Gallery"}</button>
+              </form>
             </div>
+          </div>
+          <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+            {gallery.map(item => (
+              <div key={item.id} className="aspect-square rounded-3xl overflow-hidden border relative group shadow-sm">
+                <img src={item.image_url} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center p-4">
+                  <p className="text-white text-xs font-bold text-center">{item.title}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
