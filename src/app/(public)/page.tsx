@@ -1,10 +1,11 @@
 // 1. Tetap memaksa data selalu diperbarui
 export const dynamic = 'force-dynamic'
 
-// Perbaikan path import sesuai struktur folder di image_e03028
+// Perbaikan path import sesuai struktur folder
 import { supabase } from '@/lib/supabase' 
 import HeroSlider from '@/components/layout/HeroSlider'
 import Reveal from '@/components/layout/Reveal'
+import { MessageCircle, Phone } from 'lucide-react' // Import icon tambahan
 
 export default async function HomePage() {
   // 2. Fetch data Gallery
@@ -12,13 +13,13 @@ export default async function HomePage() {
     .from('gallery')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(10); // Kita ambil sedikit lebih banyak untuk slider
+    .limit(10);
 
   return (
-    <main className="bg-white">
+    <main className="bg-white relative"> {/* Tambahkan relative di sini */}
       <HeroSlider />
 
-      {/* Section About Overview (Tetap sama) */}
+      {/* Section About Overview */}
       <section className="py-32 px-6">
         <div className="max-w-7xl mx-auto">
           <Reveal>
@@ -47,7 +48,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Section Expertise (Tetap sama) */}
+      {/* Section Expertise */}
       <section className="bg-slate-50 py-32 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <Reveal>
@@ -91,14 +92,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Gallery Section - UPDATE: SLIDER HORIZONTAL */}
+      {/* Gallery Section */}
       <section className="py-32 bg-brand-dark text-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 mb-16">
           <h2 className="text-sm font-bold text-brand-primary uppercase tracking-[0.4em] mb-4">Gallery</h2>
           <h3 className="text-4xl font-bold italic uppercase tracking-tighter">Our Work In Action</h3>
         </div>
         
-        {/* Container Slider: Menggunakan snap-x agar berhenti pas di tengah foto */}
         <div className="flex gap-6 overflow-x-auto px-6 md:px-[calc((100vw-1280px)/2)] scrollbar-hide snap-x snap-mandatory pb-10">
           {galleryItems && galleryItems.length > 0 ? (
             galleryItems.map((item) => (
@@ -125,11 +125,42 @@ export default async function HomePage() {
           )}
         </div>
 
-        {/* Info navigasi sederhana */}
         <div className="max-w-7xl mx-auto px-6">
           <p className="text-xs text-slate-500 mt-4 tracking-widest">SCROLL TO EXPLORE →</p>
         </div>
       </section>
+
+      {/* --- FLOATING WHATSAPP BUTTON (TAMBAHAN BARU) --- */}
+      <div className="fixed bottom-8 right-8 z-100 flex flex-col items-end group">
+        {/* Menu Pilihan WhatsApp yang muncul saat di-hover */}
+        <div className="flex flex-col gap-3 mb-4 opacity-0 translate-y-4 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300">
+          <a 
+            href="https://wa.me/6281252505111" 
+            target="_blank" 
+            className="bg-white text-brand-dark px-4 py-3 rounded-2xl shadow-2xl border border-slate-100 flex items-center gap-3 hover:bg-slate-50 transition-colors font-bold text-sm"
+          >
+            <div className="bg-green-500 p-1.5 rounded-lg text-white">
+              <Phone size={14} />
+            </div>
+            Customer Service 1
+          </a>
+          <a 
+            href="https://wa.me/6282245616400" 
+            target="_blank" 
+            className="bg-white text-brand-dark px-4 py-3 rounded-2xl shadow-2xl border border-slate-100 flex items-center gap-3 hover:bg-slate-50 transition-colors font-bold text-sm"
+          >
+            <div className="bg-green-500 p-1.5 rounded-lg text-white">
+              <Phone size={14} />
+            </div>
+            Customer Service 2
+          </a>
+        </div>
+
+        {/* Tombol Utama (Icon WhatsApp) */}
+        <button className="bg-green-500 text-white p-5 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300">
+          <MessageCircle size={32} fill="currentColor" />
+        </button>
+      </div>
     </main>
   );
 }
