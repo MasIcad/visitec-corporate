@@ -40,7 +40,7 @@ export default function Footer() {
             <ul className="space-y-6 text-slate-400 text-sm">
               <li className="flex gap-4">
                 <MapPin className="text-brand-primary shrink-0" size={20} />
-                <span>Kawasan Industri Terpadu, Jakarta, Indonesia</span>
+                <span>Kawasan Industri Terpadu, Indonesia</span>
               </li>
               <li className="flex gap-4">
                 <Phone className="text-brand-primary shrink-0" size={20} />
@@ -50,7 +50,7 @@ export default function Footer() {
                 <Mail className="text-brand-primary shrink-0" size={20} />
                 {/* Solusi utama: break-all dan leading-tight */}
                 <span className="break-all leading-tight">
-                  contact@powerindojayanusantara.co.id
+                  powerindo1230@gmail.com
                 </span>
               </li>
             </ul>
