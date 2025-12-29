@@ -64,7 +64,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between gap-6 text-slate-500 text-sm">
-          <p>© 2025 PT Visitec Digital Infrastruktur. All rights reserved.</p>
+          <p>© 2025 PT Powerindo Jaya Nusantara. All rights reserved.</p>
           <div className="flex gap-8">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
