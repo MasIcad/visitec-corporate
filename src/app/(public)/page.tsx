@@ -48,7 +48,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Section Expertise - UPDATE: Deskripsi spesifik untuk tiap layanan */}
+      {/* Section Expertise */}
       <section className="bg-slate-50 py-32 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <Reveal>
@@ -65,7 +65,8 @@ export default async function HomePage() {
             </div>
           </Reveal>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* items-stretch memastikan semua kolom grid memiliki tinggi yang sama */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
             {[
               { 
                 title: 'Mechanical Electrical Contractor', 
@@ -83,22 +84,33 @@ export default async function HomePage() {
                 desc: 'Distributor resmi perangkat teknologi dan sistem otomasi terintegrasi yang memastikan rantai pasok dan distribusi proyek Anda berjalan tanpa hambatan.'
               }
             ].map((item, i) => (
-              <Reveal key={i}>
-                <div className="group relative bg-white p-12 rounded-4xl border border-slate-200 transition-all duration-500 hover:-translate-y-4">
-                  <div className="absolute inset-0 bg-brand-dark scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500 rounded-4xl z-0" />
-                  <div className="relative z-10">
-                    <div className="text-4xl font-black text-slate-100 group-hover:text-white/10 transition-colors mb-8">
-                      {item.icon}
+              /* Membungkus Reveal dengan div h-full untuk menghindari error className pada komponen Reveal */
+              <div key={i} className="h-full">
+                <Reveal>
+                  {/* h-full dan flex-col memastikan kotak putih selalu rata bawah */}
+                  <div className="group relative bg-white p-12 rounded-4xl border border-slate-200 transition-all duration-500 hover:-translate-y-4 h-full flex flex-col">
+                    <div className="absolute inset-0 bg-brand-dark scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500 rounded-4xl z-0" />
+                    
+                    <div className="relative z-10 flex flex-col h-full">
+                      <div className="text-4xl font-black text-slate-100 group-hover:text-white/10 transition-colors mb-8">
+                        {item.icon}
+                      </div>
+                      
+                      {/* min-h memastikan awal teks deskripsi sejajar secara horizontal */}
+                      <div className="min-h-20">
+                        <h4 className="text-2xl font-bold text-brand-dark group-hover:text-white mb-4 transition-colors leading-tight">
+                          {item.title}
+                        </h4>
+                      </div>
+                      
+                      {/* flex-grow/grow memastikan deskripsi mengisi ruang sisa sehingga kotak tetap simetris */}
+                      <p className="text-slate-500 group-hover:text-slate-400 transition-colors leading-relaxed text-sm grow">
+                        {item.desc}
+                      </p>
                     </div>
-                    <h4 className="text-2xl font-bold text-brand-dark group-hover:text-white mb-4 transition-colors">
-                      {item.title}
-                    </h4>
-                    <p className="text-slate-500 group-hover:text-slate-400 transition-colors leading-relaxed">
-                      {item.desc}
-                    </p>
                   </div>
-                </div>
-              </Reveal>
+                </Reveal>
+              </div>
             ))}
           </div>
         </div>
@@ -142,7 +154,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Floating WhatsApp Button */}
+      {/* --- FLOATING WHATSAPP BUTTON --- */}
       <div className="fixed bottom-8 right-8 z-100 flex flex-col items-end group">
         <div className="flex flex-col gap-3 mb-4 opacity-0 translate-y-4 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300">
           <a 
