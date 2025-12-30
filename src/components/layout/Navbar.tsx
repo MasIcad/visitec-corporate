@@ -1,9 +1,9 @@
-'use client' // Pastikan ada use client karena kita menggunakan style dinamis
+'use client'
 
 export default function Navbar() {
   return (
     <nav 
-      // Menggunakan style dinamis untuk posisi top
+      // Variabel ini diisi otomatis oleh AnnouncementBar.tsx
       style={{ top: 'var(--announcement-height, 0px)' }}
       className="sticky z-50 border-b bg-white/70 backdrop-blur-md transition-all duration-300"
     >

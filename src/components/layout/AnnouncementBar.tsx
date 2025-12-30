@@ -12,29 +12,34 @@ export default function AnnouncementBar() {
     fetchLatestAnnouncement()
   }, [])
 
-  // Logika untuk mengatur jarak Navbar secara dinamis
+  // LOGIKA BARU: Mengatur jarak Navbar agar tidak tertutup
   useEffect(() => {
-    fetchLatestAnnouncement();
+    if (isVisible && announcement) {
+      document.documentElement.style.setProperty('--announcement-height', '40px');
+    } else {
+      document.documentElement.style.setProperty('--announcement-height', '0px');
+    }
+  }, [isVisible, announcement]);
 
-    // LOGIKA OTOMATIS: Cek setiap 30 detik apakah pengumuman sudah kadaluwarsa
+  // LOGIKA OTOMATIS: Cek kedaluwarsa setiap 30 detik
+  useEffect(() => {
     const interval = setInterval(() => {
-        if (announcement?.expires_at) {
+      if (announcement?.expires_at) {
         const now = new Date();
         const expiry = new Date(announcement.expires_at);
         
         if (now > expiry) {
-            setIsVisible(false); // Otomatis sembunyikan jika sudah lewat waktunya
+          setIsVisible(false); 
         }
-        }
+      }
     }, 30000); 
 
     return () => clearInterval(interval);
-    }, [announcement]);
+  }, [announcement]);
 
   async function fetchLatestAnnouncement() {
     const now = new Date().toISOString();
-
-    const { data, error } = await supabase
+    const { data } = await supabase
         .from('announcements')
         .select('*')
         .or(`expires_at.is.null,expires_at.gt."${now}"`) 
@@ -58,7 +63,8 @@ export default function AnnouncementBar() {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: '40px', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          className="fixed top-0 left-0 w-full z-100 bg-brand-primary text-white flex items-center shadow-md overflow-hidden"
+          // z-index ditingkatkan sedikit ke 101 agar berada di atas Navbar
+          className="fixed top-0 left-0 w-full z-101 bg-brand-primary text-white flex items-center shadow-md overflow-hidden"
         >
           <div className="max-w-7xl mx-auto w-full px-6 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 overflow-hidden">
