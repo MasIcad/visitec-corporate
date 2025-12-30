@@ -5,11 +5,19 @@ import { ArrowLeft, MessageCircle, ShieldCheck, Truck, Clock } from 'lucide-reac
 import Link from 'next/link'
 import Reveal from '@/components/layout/Reveal'
 
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+// Di Next.js 15, params adalah sebuah Promise
+export default async function ProductDetailPage(props: { 
+  params: Promise<{ id: string }> 
+}) {
+  // 1. Ambil params dengan await (Wajib di Next.js 15)
+  const params = await props.params;
+  const productId = params.id;
+
+  // 2. Gunakan productId untuk query ke Supabase
   const { data: product } = await supabase
     .from('products')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', productId)
     .single();
 
   if (!product) return notFound();
@@ -74,6 +82,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
               <a 
                 href={`https://wa.me/6281252505111?text=${waMessage}`}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="bg-green-500 text-white py-5 px-8 rounded-2xl font-bold flex items-center justify-center gap-4 hover:bg-green-600 transition-all shadow-xl shadow-green-100 group"
               >
                 <MessageCircle size={24} fill="currentColor" className="group-hover:rotate-12 transition-transform" />
