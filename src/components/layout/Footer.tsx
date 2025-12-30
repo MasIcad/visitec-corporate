@@ -1,4 +1,4 @@
-'use client' // Wajib agar useState dan form submission berfungsi
+'use client' 
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -6,12 +6,10 @@ import { Mail, MapPin, Phone, Loader2, Facebook } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Footer() {
-  // State untuk menangani logika subscribe
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  // Fungsi pengiriman email ke Supabase
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
@@ -19,7 +17,7 @@ export default function Footer() {
     setLoading(true)
     try {
       const { error } = await supabase
-        .from('subscribers') // Pastikan tabel 'subscribers' sudah dibuat di SQL Editor
+        .from('subscribers') 
         .insert([{ email }])
 
       if (error) throw error
@@ -30,12 +28,10 @@ export default function Footer() {
       setStatus('error')
     } finally {
       setLoading(false)
-      // Reset status pesan setelah 3 detik
       setTimeout(() => setStatus('idle'), 3000)
     }
   }
 
-  // Data Sosial Media tetap sama seperti kodingan Anda
   const socialLinks = [
     { 
       Icon: Facebook, 
@@ -59,7 +55,8 @@ export default function Footer() {
           {/* Kolom 1: Brand */}
           <div className="space-y-6">
             <h2 className="text-3xl font-black tracking-tighter italic">
-              POWERINDO<span className="text-brand-primary">JAYA NUSANTARA</span>
+              {/* JAYA NUSANTARA diubah ke warna #2DC653 agar sangat cerah di bg gelap */}
+              POWERINDO<span className="text-[#2DC653]">JAYA NUSANTARA</span>
             </h2>
             <p className="text-slate-400 leading-relaxed text-sm">
               Leading the digital frontier with robust infrastructure and innovative enterprise solutions.
@@ -79,7 +76,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Kolom 2: Quick Links */}
+          {/* Kolom 2: Navigation */}
           <div>
             <h4 className="font-bold mb-8 uppercase tracking-widest text-sm">Navigation</h4>
             <ul className="space-y-4 text-slate-400 text-sm">
@@ -115,7 +112,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Kolom 4: Newsletter (DIUBAH MENJADI FORM BERFUNGSI) */}
+          {/* Kolom 4: Newsletter */}
           <div>
             <h4 className="font-bold mb-8 uppercase tracking-widest text-sm">Stay Updated</h4>
             <p className="text-slate-400 mb-6 text-sm">Subscribe to our monthly corporate insights.</p>
@@ -130,14 +127,13 @@ export default function Footer() {
               />
               <button 
                 disabled={loading}
-                className="bg-brand-primary text-white font-bold py-3 rounded-full hover:bg-blue-700 transition-all text-sm w-full flex justify-center items-center gap-2"
+                className="bg-brand-primary text-white font-bold py-3 rounded-full hover:bg-[#1A7431] transition-all text-sm w-full flex justify-center items-center gap-2 shadow-lg"
               >
                 {loading ? <Loader2 className="animate-spin" size={18} /> : 'SUBSCRIBE'}
               </button>
 
-              {/* Feedback status untuk user */}
               {status === 'success' && (
-                <p className="text-green-400 text-[10px] font-bold animate-pulse uppercase tracking-widest mt-1">✓ Terima kasih! Anda telah terdaftar.</p>
+                <p className="text-[#2DC653] text-[10px] font-bold animate-pulse uppercase tracking-widest mt-1">✓ Terima kasih! Anda telah terdaftar.</p>
               )}
               {status === 'error' && (
                 <p className="text-red-400 text-[10px] font-bold mt-1 uppercase tracking-widest">⚠ Email salah atau sudah terdaftar.</p>
