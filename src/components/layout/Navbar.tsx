@@ -18,7 +18,7 @@ export default function Navbar() {
             src="/Logo2.png" 
             alt="Logo Powerindo Jaya Nusantara" 
             // Ukuran logo ditingkatkan dari h-10 ke h-12
-            className="h-12 w-auto object-contain mix-blend-multiply" 
+            className="h-14 w-auto object-contain mix-blend-multiply" 
           />
           {/* Ukuran teks ditingkatkan dari text-xl ke text-2xl */}
           <span className="text-2xl font-bold text-brand-dark group-hover:text-brand-primary transition-colors tracking-tight">
