@@ -82,7 +82,11 @@ export default async function HomePage() {
                   Integrated Solutions for High-Scale Enterprise.
                 </h3>
               </div>
-              <Link href="/services" className="px-8 py-4 border-2 border-brand-dark text-brand-dark font-bold rounded-full hover:bg-brand-dark hover:text-white transition-all">
+              {/* PERBAIKAN: Link diarahkan ke ID di halaman About */}
+              <Link 
+                href="/about#expertise-section" 
+                className="px-8 py-4 border-2 border-brand-dark text-brand-dark font-bold rounded-full hover:bg-brand-dark hover:text-white transition-all"
+              >
                 VIEW ALL SERVICES
               </Link>
             </div>

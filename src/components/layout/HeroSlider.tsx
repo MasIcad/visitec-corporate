@@ -5,24 +5,28 @@ import { ArrowRight } from 'lucide-react'
 
 const slides = [
   {
-    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1920',
-    title: 'POWERING THE FUTURE',
-    desc: 'Solusi infrastruktur listrik terpercaya untuk mendukung pertumbuhan industri nasional.'
+    // Visual: Gardu Induk / Trafo Besar
+    image: 'https://images.unsplash.com/photo-1594595240905-04ae0d99f73b?auto=format&fit=crop&q=80&w=1920',
+    title: 'ELECTRICAL CONTRACTOR',
+    desc: 'Ahli dalam instalasi, pemeliharaan, dan integrasi sistem mekanikal elektrikal skala industri yang kompleks.'
   },
   {
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1920',
-    title: 'INNOVATION DRIVEN',
-    desc: 'Menghadirkan teknologi terbaru dengan standar keamanan dan efisiensi internasional.'
+    // Visual: Detail Komponen Listrik/Trafo
+    image: 'https://images.unsplash.com/photo-1580737338041-628c113e7661?auto=format&fit=crop&q=80&w=1920',
+    title: 'PREMIUM SUPPLIER',
+    desc: 'Penyedia komponen elektrikal dan infrastruktur energi berkualitas tinggi untuk menjamin keandalan bisnis Anda.'
   },
   {
-    image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&q=80&w=1920', // Contoh: Foto trafo/listrik
-    title: 'ROBUST INFRASTRUCTURE',
-    desc: 'Membangun fondasi energi yang kuat dan tahan lama untuk kebutuhan masa depan.'
+    // Visual: Jaringan Distribusi
+    image: 'https://images.unsplash.com/photo-1487803868669-411d48552474?auto=format&fit=crop&q=80&w=1920',
+    title: 'OFFICIAL DISTRIBUTOR',
+    desc: 'Distributor resmi perangkat teknologi otomasi dan sistem kelistrikan yang memastikan rantai pasok proyek tanpa hambatan.'
   },
   {
-    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1920', // Contoh: Foto teknologi digital
-    title: 'DIGITAL TRANSFORMATION',
-    desc: 'Integrasi sistem pintar untuk operasional yang lebih cerdas dan terintegrasi.'
+    // Visual: Fasilitas Industri Modern
+    image: 'https://images.unsplash.com/photo-1563968351004-f92d55fc4499?auto=format&fit=crop&q=80&w=1920',
+    title: 'INTEGRATED SOLUTIONS',
+    desc: 'Mitra strategis dalam menghadirkan solusi infrastruktur energi terpadu untuk efisiensi dan masa depan industri.'
   }
 ]
 
@@ -32,7 +36,7 @@ export default function HeroSlider() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1))
-    }, 6000) // Durasi ditingkatkan ke 6 detik agar pengunjung sempat membaca
+    }, 6000) 
     return () => clearInterval(timer)
   }, [])
 
@@ -42,7 +46,7 @@ export default function HeroSlider() {
         <motion.div
           key={current}
           initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 0.5, scale: 1 }} // Opacity 0.5 agar teks putih lebih menonjol
+          animate={{ opacity: 0.5, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.5 }}
           className="absolute inset-0"
@@ -65,7 +69,7 @@ export default function HeroSlider() {
               exit={{ y: -40, opacity: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
-              <h1 className="text-6xl md:text-8xl font-black text-white leading-none mb-8 italic tracking-tighter">
+              <h1 className="text-6xl md:text-8xl font-black text-white leading-none mb-8 italic tracking-tighter uppercase">
                 {slides[current].title}
               </h1>
               <p className="text-xl md:text-2xl text-slate-200 mb-12 max-w-2xl leading-relaxed">
@@ -74,9 +78,9 @@ export default function HeroSlider() {
               <div className="flex gap-4">
                 <a 
                   href="#about-section"
-                  className="px-10 py-5 bg-brand-primary text-white font-bold rounded-full hover:scale-105 transition-transform flex items-center gap-3 cursor-pointer shadow-2xl"
+                  className="px-10 py-5 bg-brand-primary text-white font-bold rounded-full hover:scale-105 transition-transform flex items-center gap-3 cursor-pointer shadow-2xl group"
                 >
-                  LEARN MORE <ArrowRight size={22} />
+                  LEARN MORE <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform"/>
                 </a>
               </div>
             </motion.div>
@@ -84,7 +88,6 @@ export default function HeroSlider() {
         </div>
       </div>
       
-      {/* Slide Indicators - Otomatis menyesuaikan jumlah foto */}
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-20">
         {slides.map((_, i) => (
           <button
@@ -97,8 +100,7 @@ export default function HeroSlider() {
         ))}
       </div>
 
-      {/* Overlay gradien gelap di bawah agar menyatu dengan section berikutnya */}
-      <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/80 via-transparent to-transparent z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-t from-brand-dark/90 via-brand-dark/20 to-transparent z-0 pointer-events-none" />
     </div>
   )
 }
