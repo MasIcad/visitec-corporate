@@ -1,55 +1,98 @@
 'use client'
 
 import { useState } from 'react'
-import { Maximize2, X } from 'lucide-react'
+import { Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react'
 
-export default function ProductImage({ src, alt }: { src: string; alt: string }) {
-  const [isOpen, setIsOpen] = useState(false)
+export default function ProductView({ images, alt }: { images: string[], alt: string }) {
+  const [index, setIndex] = useState(0)
+  const [isFull, setIsFull] = useState(false)
+
+  // Pastikan ada array gambar, jika kosong gunakan placeholder
+  const gallery = images && images.length > 0 ? images : ["/placeholder-image.jpg"]
+
+  const nextPhoto = () => {
+    setIndex((prev) => (prev + 1) % gallery.length)
+  }
+
+  const prevPhoto = () => {
+    setIndex((prev) => (prev - 1 + gallery.length) % gallery.length)
+  }
 
   return (
-    <>
-      {/* Tampilan Gambar di Halaman (Tetap Square agar rapi) */}
-      <div 
-        className="relative group cursor-pointer rounded-4xl overflow-hidden border border-slate-100 shadow-2xl aspect-square bg-slate-50"
-        onClick={() => setIsOpen(true)}
-      >
+    <div className="flex flex-col gap-6">
+      {/* FRAME UTAMA */}
+      <div className="relative group rounded-4xl overflow-hidden border border-slate-100 shadow-2xl aspect-square bg-slate-50">
         <img 
-          src={src} 
-          alt={alt} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          src={gallery[index]} 
+          alt={`${alt} - ${index + 1}`} 
+          className="w-full h-full object-cover transition-all duration-500"
         />
-        {/* Overlay Hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-            <div className="bg-white/90 p-4 rounded-2xl opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-xl">
-                <Maximize2 className="text-brand-primary" size={24} />
-            </div>
+
+        {/* TOMBOL NAVIGASI (Hanya muncul jika foto > 1) */}
+        {gallery.length > 1 && (
+          <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <button 
+              onClick={prevPhoto}
+              className="bg-white/90 hover:bg-brand-primary hover:text-white text-brand-dark p-3 rounded-2xl shadow-xl transition-all active:scale-90"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button 
+              onClick={nextPhoto}
+              className="bg-white/90 hover:bg-brand-primary hover:text-white text-brand-dark p-3 rounded-2xl shadow-xl transition-all active:scale-90"
+            >
+              <ChevronRight size={24} />
+            </button>
+          </div>
+        )}
+
+        {/* INDIKATOR NOMOR & TOMBOL FULLSCREEN */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4">
+           <div className="bg-brand-dark/80 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-bold text-white tracking-widest">
+              {index + 1} / {gallery.length}
+           </div>
+           <button 
+            onClick={() => setIsFull(true)}
+            className="bg-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+           >
+            <Maximize2 size={16} className="text-brand-primary" />
+           </button>
         </div>
       </div>
 
-      {/* MODAL FULL SCREEN (Tanpa Crop) */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-100 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300"
-          onClick={() => setIsOpen(false)}
-        >
-          <button 
-            className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2"
-            onClick={() => setIsOpen(false)}
-          >
-            <X size={40} />
-          </button>
-          
-          <img 
-            src={src} 
-            alt={alt} 
-            className="max-w-full max-h-full object-contain rounded-xl shadow-2xl animate-in zoom-in-95 duration-300"
-          />
-          
-          <div className="absolute bottom-8 text-white/40 text-sm font-medium tracking-widest uppercase">
-            Click anywhere to close
-          </div>
+      {/* THUMBNAIL LIST (Klik Langsung ke Foto) */}
+      {gallery.length > 1 && (
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {gallery.map((img, i) => (
+            <button 
+              key={i}
+              onClick={() => setIndex(i)}
+              className={`relative shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${
+                index === i ? 'border-brand-primary scale-105 shadow-md' : 'border-transparent opacity-60'
+              }`}
+            >
+              <img src={img} className="w-full h-full object-cover" />
+            </button>
+          ))}
         </div>
       )}
-    </>
+
+      {/* MODAL FULLSCREEN (Tanpa Terpotong) */}
+      {isFull && (
+        <div 
+          className="fixed inset-0 z-999 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 md:p-16 animate-in fade-in duration-300"
+          onClick={() => setIsFull(false)}
+        >
+          <button className="absolute top-10 right-10 text-white hover:text-brand-primary transition-colors">
+            <X size={40} />
+          </button>
+          <img 
+            src={gallery[index]} 
+            className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
+            alt="Full Size View"
+          />
+        </div>
+      )}
+    </div>
   )
 }
