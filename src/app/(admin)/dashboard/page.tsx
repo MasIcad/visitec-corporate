@@ -54,7 +54,7 @@ export default function DashboardPage() {
   }
 
   const uploadToStorage = async (file: File, folder: string) => {
-    const fileName = `${Date.now()}-${file.name}`;
+    const fileName = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
     const filePath = `${folder}/${fileName}`;
     const { error } = await supabase.storage.from('visitec-assets').upload(filePath, file);
     if (error) throw error;
@@ -85,11 +85,13 @@ export default function DashboardPage() {
         }
       }
       
+      if (imageUrls.length === 0) throw new Error("Artikel wajib memiliki minimal 1 foto.");
+
       const postData = { 
         title: postForm.title, 
         content: { body: postForm.content, gallery: imageUrls },
         image_url: imageUrls[0] || '',
-        slug: postForm.title.toLowerCase().replace(/ /g, '-')
+        slug: postForm.title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-')
       };
 
       if (editingPostId) {
@@ -130,8 +132,7 @@ export default function DashboardPage() {
       let imageUrls: string[] = [...prodForm.existingImages];
       
       if (prodForm.files.length > 0) {
-        const filesToUpload = prodForm.files.slice(0, 5);
-        for (const file of filesToUpload) {
+        for (const file of prodForm.files) {
           const url = await uploadToStorage(file, 'products');
           imageUrls.push(url);
         }
@@ -212,40 +213,32 @@ export default function DashboardPage() {
                 <textarea placeholder="Mulai menulis konten di sini..." required className="w-full p-5 bg-slate-50 rounded-2xl outline-none h-80 resize-none" value={postForm.content} onChange={e => setPostForm({...postForm, content: e.target.value})} />
                 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <input type="file" id="postImgs" multiple hidden onChange={e => setPostForm({...postForm, files: [...postForm.files, ...Array.from(e.target.files || [])]})} />
-                    <label htmlFor="postImgs" className="flex-1 p-4 border-2 border-dashed border-slate-200 rounded-2xl text-center cursor-pointer font-bold text-slate-400">
-                      📸 {editingPostId ? 'Tambah Foto Baru' : 'Pilih Foto Galeri Artikel'}
-                    </label>
-                  </div>
-
-                  {/* UI UNTUK GAMBAR LAMA (EXISTING) */}
-                  {postForm.existingImages.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gambar Saat Ini:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {postForm.existingImages.map((url, idx) => (
-                          <div key={idx} className="relative w-20 h-20 bg-slate-100 rounded-xl overflow-hidden border-2 border-brand-primary/20">
-                            <img src={url} className="w-full h-full object-cover" />
-                            <button type="button" onClick={() => setPostForm({...postForm, existingImages: postForm.existingImages.filter((_, i) => i !== idx)})} className="absolute top-1 right-1 bg-brand-primary text-white rounded-full p-0.5 shadow-md"><X size={12} /></button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* UI UNTUK GAMBAR BARU (PREVIEW) */}
-                  <div className="flex flex-wrap gap-2">
-                    {postForm.files.map((file, idx) => (
-                      <div key={idx} className="relative w-20 h-20 bg-slate-100 rounded-xl overflow-hidden border border-dashed border-brand-primary">
-                        <img src={URL.createObjectURL(file)} className="w-full h-full object-cover opacity-70" />
-                        <button type="button" onClick={() => setPostForm({...postForm, files: postForm.files.filter((_, i) => i !== idx)})} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5"><X size={12} /></button>
-                      </div>
-                    ))}
-                  </div>
+                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Gallery Foto Artikel</p>
+                   <div className="flex flex-wrap gap-3">
+                      {/* Foto Lama */}
+                      {postForm.existingImages.map((url, idx) => (
+                        <div key={idx} className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-brand-primary/20 group">
+                          <img src={url} className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => setPostForm({...postForm, existingImages: postForm.existingImages.filter((_, i) => i !== idx)})} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
+                        </div>
+                      ))}
+                      {/* Preview Foto Baru */}
+                      {postForm.files.map((file, idx) => (
+                        <div key={idx} className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-dashed border-brand-primary">
+                          <img src={URL.createObjectURL(file)} className="w-full h-full object-cover opacity-60" />
+                          <button type="button" onClick={() => setPostForm({...postForm, files: postForm.files.filter((_, i) => i !== idx)})} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"><X size={12} /></button>
+                        </div>
+                      ))}
+                      {/* Input Upload */}
+                      <label className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors text-slate-400">
+                        <Plus size={24} />
+                        <span className="text-[10px] font-bold mt-1">Tambah</span>
+                        <input type="file" multiple hidden onChange={e => setPostForm({...postForm, files: [...postForm.files, ...Array.from(e.target.files || [])]})} />
+                      </label>
+                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 pt-6">
                     {editingPostId && (
                         <button type="button" onClick={() => { setEditingPostId(null); setPostForm({title:'', content:'', files:[], existingImages:[]})}} className="flex-1 py-5 bg-slate-100 text-slate-600 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors"><RotateCcw size={18}/> Batal</button>
                     )}
@@ -282,31 +275,26 @@ export default function DashboardPage() {
               <h2 className="text-2xl font-bold mb-8">{editingProdId ? 'Edit Produk' : 'Tambah Produk'}</h2>
               <form onSubmit={handleAddProduct} className="space-y-5">
                 <input type="text" placeholder="Nama Produk" required className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold" value={prodForm.name} onChange={e => setProdForm({...prodForm, name: e.target.value})} />
-                
                 <select required className="w-full p-4 bg-slate-50 rounded-2xl outline-none text-slate-600 cursor-pointer" value={prodForm.category} onChange={e => setProdForm({...prodForm, category: e.target.value})}>
                   <option value="" disabled>Pilih Kategori Produk</option>
                   {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                 </select>
-
                 <input type="number" placeholder="Harga" required className="w-full p-4 bg-slate-50 rounded-2xl outline-none" value={prodForm.price} onChange={e => setProdForm({...prodForm, price: e.target.value})} />
                 <textarea placeholder="Deskripsi..." required className="w-full p-4 bg-slate-50 rounded-2xl outline-none h-32" value={prodForm.desc} onChange={e => setProdForm({...prodForm, desc: e.target.value})} />
                 
                 <div className="space-y-4">
-                  <input type="file" id="prodFile" multiple hidden onChange={e => setProdForm({...prodForm, files: Array.from(e.target.files || [])})} />
-                  <label htmlFor="prodFile" className="block p-4 border-2 border-dashed border-slate-200 rounded-2xl text-center cursor-pointer text-slate-400 font-bold">
-                    {prodForm.files.length > 0 ? `${prodForm.files.length} Foto Baru Terpilih` : editingProdId ? "+ Ganti/Tambah Foto" : "+ Upload Gambar (Maks 5)"}
-                  </label>
-
-                  {editingProdId && prodForm.existingImages.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {prodForm.existingImages.map((url, idx) => (
-                        <div key={idx} className="relative w-14 h-14 rounded-lg overflow-hidden border">
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Foto Produk</p>
+                   <div className="flex flex-wrap gap-2">
+                      {prodForm.existingImages.map((url, i) => (
+                        <div key={i} className="relative w-12 h-12 rounded-lg overflow-hidden border">
                           <img src={url} className="w-full h-full object-cover" />
-                          <button type="button" onClick={() => setProdForm({...prodForm, existingImages: prodForm.existingImages.filter((_, i) => i !== idx)})} className="absolute top-0 right-0 bg-brand-primary text-white p-0.5"><X size={10} /></button>
+                          <button type="button" onClick={() => setProdForm({...prodForm, existingImages: prodForm.existingImages.filter((_, idx) => idx !== i)})} className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-lg p-0.5"><X size={10} /></button>
                         </div>
                       ))}
-                    </div>
-                  )}
+                      <label className="w-12 h-12 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center cursor-pointer text-slate-400 hover:bg-slate-50">
+                        <Plus size={16} /><input type="file" multiple hidden onChange={e => setProdForm({...prodForm, files: [...prodForm.files, ...Array.from(e.target.files || [])]})} />
+                      </label>
+                   </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
