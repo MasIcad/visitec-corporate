@@ -1,8 +1,41 @@
-import { Mail, MapPin, Phone, Linkedin, Instagram, Twitter, Facebook } from 'lucide-react'
+'use client' // Wajib agar useState dan form submission berfungsi
+
+import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { Mail, MapPin, Phone, Loader2, Facebook } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Footer() {
-  // Data Sosial Media
+  // State untuk menangani logika subscribe
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+
+  // Fungsi pengiriman email ke Supabase
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) return
+
+    setLoading(true)
+    try {
+      const { error } = await supabase
+        .from('subscribers') // Pastikan tabel 'subscribers' sudah dibuat di SQL Editor
+        .insert([{ email }])
+
+      if (error) throw error
+      setStatus('success')
+      setEmail('')
+    } catch (err) {
+      console.error(err)
+      setStatus('error')
+    } finally {
+      setLoading(false)
+      // Reset status pesan setelah 3 detik
+      setTimeout(() => setStatus('idle'), 3000)
+    }
+  }
+
+  // Data Sosial Media tetap sama seperti kodingan Anda
   const socialLinks = [
     { 
       Icon: Facebook, 
@@ -51,11 +84,9 @@ export default function Footer() {
             <h4 className="font-bold mb-8 uppercase tracking-widest text-sm">Navigation</h4>
             <ul className="space-y-4 text-slate-400 text-sm">
               <li><Link href="/" className="hover:text-brand-primary transition-colors">Home</Link></li>
-              {/* Menambahkan link About yang baru dibuat */}
               <li><Link href="/about" className="hover:text-brand-primary transition-colors">About Us</Link></li>
               <li><Link href="/products" className="hover:text-brand-primary transition-colors">Katalog</Link></li>
               <li><Link href="/blog" className="hover:text-brand-primary transition-colors">Insight</Link></li>
-              {/* Pastikan folder app/contact/page.tsx sudah ada */}
               <li><Link href="/contact" className="hover:text-brand-primary transition-colors">Contact</Link></li>
             </ul>
           </div>
@@ -84,20 +115,34 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Kolom 4: Newsletter */}
+          {/* Kolom 4: Newsletter (DIUBAH MENJADI FORM BERFUNGSI) */}
           <div>
             <h4 className="font-bold mb-8 uppercase tracking-widest text-sm">Stay Updated</h4>
             <p className="text-slate-400 mb-6 text-sm">Subscribe to our monthly corporate insights.</p>
-            <div className="flex flex-col gap-3">
+            <form onSubmit={handleSubscribe} className="flex flex-col gap-3">
               <input 
                 type="email" 
                 placeholder="Your Email" 
-                className="bg-white/5 border border-white/10 px-5 py-3 rounded-full text-sm focus:outline-none focus:border-brand-primary w-full" 
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-white/5 border border-white/10 px-5 py-3 rounded-full text-sm focus:outline-none focus:border-brand-primary w-full transition-all" 
               />
-              <button className="bg-brand-primary text-white font-bold py-3 rounded-full hover:bg-blue-700 transition-all text-sm w-full">
-                SUBSCRIBE
+              <button 
+                disabled={loading}
+                className="bg-brand-primary text-white font-bold py-3 rounded-full hover:bg-blue-700 transition-all text-sm w-full flex justify-center items-center gap-2"
+              >
+                {loading ? <Loader2 className="animate-spin" size={18} /> : 'SUBSCRIBE'}
               </button>
-            </div>
+
+              {/* Feedback status untuk user */}
+              {status === 'success' && (
+                <p className="text-green-400 text-[10px] font-bold animate-pulse uppercase tracking-widest mt-1">✓ Terima kasih! Anda telah terdaftar.</p>
+              )}
+              {status === 'error' && (
+                <p className="text-red-400 text-[10px] font-bold mt-1 uppercase tracking-widest">⚠ Email salah atau sudah terdaftar.</p>
+              )}
+            </form>
           </div>
         </div>
 

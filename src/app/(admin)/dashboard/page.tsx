@@ -3,16 +3,18 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { 
   Plus, Package, Image as ImageIcon, Loader2, 
-  Trash2, LayoutDashboard, FileText, Save, X, Tag, Pencil, RotateCcw
+  Trash2, LayoutDashboard, FileText, Save, X, Tag, Pencil, RotateCcw, Users, Mail
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<'insight' | 'products' | 'gallery'>('insight');
+  // Tambahkan 'subscribers' ke activeTab
+  const [activeTab, setActiveTab] = useState<'insight' | 'products' | 'gallery' | 'subscribers'>('insight');
   const [loading, setLoading] = useState(false);
   
   const [posts, setPosts] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [gallery, setGallery] = useState<any[]>([]);
+  const [subscribers, setSubscribers] = useState<any[]>([]); // State baru untuk subscribers
   
   const categories = [
     "Trafo", "Cubicle", "ATS+LVMDP", "Capasitor Bank", 
@@ -47,10 +49,12 @@ export default function DashboardPage() {
     const { data: postsData } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
     const { data: prodData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
     const { data: gallData } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
+    const { data: subData } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
     
     if (postsData) setPosts(postsData);
     if (prodData) setProducts(prodData);
     if (gallData) setGallery(gallData);
+    if (subData) setSubscribers(subData);
   }
 
   const uploadToStorage = async (file: File, folder: string) => {
@@ -183,16 +187,17 @@ export default function DashboardPage() {
           <h1 className="text-4xl font-black text-brand-dark italic uppercase tracking-tighter">Powerindo Jaya Nusantara Control Center</h1>
           <p className="text-slate-500 mt-2">Kelola konten, produk, dan performa digital perusahaan.</p>
         </div>
-        <div className="flex gap-4 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+        <div className="flex flex-wrap gap-2 md:gap-4 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
           {[
             { id: 'insight', label: 'Insights', icon: LayoutDashboard },
             { id: 'products', label: 'Produk', icon: Package },
             { id: 'gallery', label: 'Gallery', icon: ImageIcon },
+            { id: 'subscribers', label: 'Leads', icon: Users }, // Tab baru
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === tab.id ? 'bg-brand-primary text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all text-xs md:text-sm ${activeTab === tab.id ? 'bg-brand-primary text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}
             >
               <tab.icon size={18} /> {tab.label}
             </button>
@@ -200,6 +205,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* 1. TAB INSIGHTS */}
       {activeTab === 'insight' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-2">
@@ -265,6 +271,7 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* 2. TAB PRODUK */}
       {activeTab === 'products' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-1">
@@ -284,7 +291,6 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Foto Produk</p>
                    <div className="flex flex-wrap gap-2">
-                      {/* Foto yang sudah ada di database */}
                       {prodForm.existingImages.map((url, i) => (
                         <div key={i} className="relative w-12 h-12 rounded-lg overflow-hidden border">
                           <img src={url} className="w-full h-full object-cover" />
@@ -292,7 +298,6 @@ export default function DashboardPage() {
                         </div>
                       ))}
                       
-                      {/* --- PERBAIKAN: Preview Foto Baru yang akan diupload --- */}
                       {prodForm.files.map((file, idx) => (
                         <div key={idx} className="relative w-12 h-12 rounded-lg overflow-hidden border-2 border-dashed border-brand-primary">
                           <img src={URL.createObjectURL(file)} className="w-full h-full object-cover opacity-70" />
@@ -340,6 +345,7 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* 3. TAB GALLERY */}
       {activeTab === 'gallery' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-1">
@@ -350,7 +356,6 @@ export default function DashboardPage() {
                 <div className="border-2 border-dashed border-slate-200 p-10 rounded-3xl text-center">
                   <input type="file" id="gallFile" hidden onChange={e => setGallForm({...gallForm, file: e.target.files?.[0] || null})} />
                   <label htmlFor="gallFile" className="cursor-pointer flex flex-col items-center gap-3 text-slate-400 font-bold">
-                    {/* Preview Foto Gallery Baru */}
                     {gallForm.file ? (
                       <div className="w-full aspect-video rounded-xl overflow-hidden mb-2">
                          <img src={URL.createObjectURL(gallForm.file)} className="w-full h-full object-cover" />
@@ -374,6 +379,54 @@ export default function DashboardPage() {
                </div>
              ))}
           </div>
+        </div>
+      )}
+
+      {/* 4. TAB SUBSCRIBERS (FITUR BARU) */}
+      {activeTab === 'subscribers' && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+           <div className="bg-white p-10 rounded-4xl shadow-xl border border-slate-100">
+              <div className="flex justify-between items-center mb-10">
+                <div>
+                  <h2 className="text-3xl font-black text-brand-dark italic uppercase tracking-tighter flex items-center gap-3">
+                    <Mail className="text-brand-primary" /> Potential Leads
+                  </h2>
+                  <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mt-2">Daftar Email yang Terdaftar via Newsletter</p>
+                </div>
+                <div className="bg-blue-50 text-brand-primary px-6 py-3 rounded-2xl border border-blue-100 font-black italic">
+                   TOTAL: {subscribers.length} EMAIL
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {subscribers.map((sub) => (
+                  <div key={sub.id} className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col justify-between group hover:border-brand-primary transition-all">
+                    <div>
+                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
+                        <Mail size={18} className="text-slate-300 group-hover:text-brand-primary transition-colors" />
+                      </div>
+                      <p className="font-bold text-brand-dark truncate">{sub.email}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mt-2">
+                        Terdaftar: {new Date(sub.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={async () => { if(confirm('Hapus email ini dari daftar?')) { await supabase.from('subscribers').delete().eq('id', sub.id); fetchData(); } }}
+                      className="mt-6 p-3 bg-white text-red-400 hover:bg-red-50 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition-colors border border-slate-100"
+                    >
+                      <Trash2 size={14} /> Hapus Data
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {subscribers.length === 0 && (
+                <div className="py-20 text-center">
+                   <Users size={48} className="mx-auto text-slate-200 mb-4" />
+                   <p className="text-slate-400 italic">Belum ada orang yang subscribe ke newsletter.</p>
+                </div>
+              )}
+           </div>
         </div>
       )}
     </div>
