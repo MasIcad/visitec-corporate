@@ -1,4 +1,5 @@
 import { Mail, MapPin, Phone, Linkedin, Instagram, Twitter, Facebook } from 'lucide-react'
+import Link from 'next/link' // Import Link untuk navigasi internal
 
 export default function Footer() {
   // Data Sosial Media
@@ -8,7 +9,6 @@ export default function Footer() {
       href: "https://www.facebook.com/Powerindoo/" 
     },
     { 
-      // Ikon TikTok Kustom (karena tidak ada di Lucide dasar)
       Icon: (props: any) => (
         <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
@@ -16,7 +16,6 @@ export default function Footer() {
       ), 
       href: "https://www.tiktok.com/@powerindojayanusantara?_r=1&_t=ZS-92d6L5GgFIi" 
     },
-    // Anda bisa menambahkan Instagram/Linkedin di sini jika diperlukan nanti
   ];
 
   return (
@@ -51,9 +50,11 @@ export default function Footer() {
           <div>
             <h4 className="font-bold mb-8 uppercase tracking-widest text-sm">Navigation</h4>
             <ul className="space-y-4 text-slate-400 text-sm">
-              {['Home', 'About', 'Katalog', 'Insight', 'Contact'].map((item) => (
-                <li key={item}><a href="#" className="hover:text-brand-primary transition-colors">{item}</a></li>
-              ))}
+              {/* Perbaikan link navigasi internal menggunakan Link */}
+              <li><Link href="/" className="hover:text-brand-primary transition-colors">Home</Link></li>
+              <li><Link href="/products" className="hover:text-brand-primary transition-colors">Katalog</Link></li>
+              <li><Link href="/blog" className="hover:text-brand-primary transition-colors">Insight</Link></li>
+              <li><Link href="/contact" className="hover:text-brand-primary transition-colors">Contact</Link></li>
             </ul>
           </div>
 
@@ -98,12 +99,13 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar - PERBAIKAN DI SINI */}
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between gap-6 text-slate-500 text-xs sm:text-sm">
           <p>© 2025 PT Powerindo Jaya Nusantara. All rights reserved.</p>
           <div className="flex gap-8">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            {/* Mengarahkan ke folder /legal yang sudah dibuat sebelumnya */}
+            <Link href="/legal" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/legal" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>
