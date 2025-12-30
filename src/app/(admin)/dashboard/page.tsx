@@ -18,7 +18,7 @@ export default function DashboardPage() {
   
   // --- STATE BARU UNTUK BROADCAST ---
   const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
-  const [broadcastForm, setBroadcastForm] = useState({ subject: '', message: '' });
+  const [broadcastForm, setBroadcastForm] = useState({ subject: '', message: '', expires_at: '' });
   const [isBroadcasting, setIsBroadcasting] = useState(false);
 
   const categories = [
@@ -73,7 +73,7 @@ export default function DashboardPage() {
 
   const handleSendBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedEmails.length === 0) return alert("Pilih minimal satu email!");
+    if (selectedEmails.length === 0) return alert("Pilih minimal satu penerima!");
     
     setIsBroadcasting(true);
     try {
@@ -82,13 +82,14 @@ export default function DashboardPage() {
         .insert([{ 
           subject: broadcastForm.subject, 
           message: broadcastForm.message,
-          target_emails: selectedEmails // Menyimpan daftar siapa saja yang mendapat pesan ini
+          target_emails: selectedEmails,
+          // Jika tanggal dikosongkan, maka tidak akan pernah kedaluwarsa
+          expires_at: broadcastForm.expires_at || null 
         }]);
 
       if (error) throw error;
-
-      alert(`Pengumuman berhasil dipublish untuk ${selectedEmails.length} user!`);
-      setBroadcastForm({ subject: '', message: '' });
+      alert(`Broadcast berhasil dipublish!`);
+      setBroadcastForm({ subject: '', message: '', expires_at: '' });
       setSelectedEmails([]);
     } catch (err: any) {
       alert("Gagal: " + err.message);
@@ -422,6 +423,15 @@ export default function DashboardPage() {
                 value={broadcastForm.message}
                 onChange={e => setBroadcastForm({...broadcastForm, message: e.target.value})}
               />
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-2">Atur Tanggal Kedaluwarsa (Opsional)</label>
+                <input 
+                  type="datetime-local" 
+                  className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-brand-primary text-white"
+                  value={broadcastForm.expires_at}
+                  onChange={e => setBroadcastForm({...broadcastForm, expires_at: e.target.value})}
+                />
+              </div>
               <button 
                 disabled={isBroadcasting || selectedEmails.length === 0}
                 className="w-full py-4 bg-brand-primary text-white font-bold rounded-2xl shadow-lg flex justify-center items-center gap-3 disabled:bg-slate-700 disabled:cursor-not-allowed hover:bg-blue-600 transition-all uppercase tracking-widest text-xs"

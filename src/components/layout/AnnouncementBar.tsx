@@ -13,15 +13,19 @@ export default function AnnouncementBar() {
   }, [])
 
   async function fetchLatestAnnouncement() {
+    const now = new Date().toISOString();
+    
     const { data } = await supabase
-      .from('announcements')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
+        .from('announcements')
+        .select('*')
+        // Ambil yang (expires_at kosong) ATAU (expires_at masih di masa depan)
+        .or(`expires_at.is.null,expires_at.gt.${now}`) 
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
     
     if (data) setAnnouncement(data)
-  }
+    }
 
   if (!announcement || !isVisible) return null
 
