@@ -70,7 +70,7 @@ export default function AboutPage() {
       <section className="py-32 bg-slate-50 px-6">
         <div className="max-w-7xl mx-auto">
           <Reveal>
-            <div className="text-center mb-20">
+            <div id="expertise-section" className="text-center mb-20">
               <h2 className="text-brand-primary font-bold uppercase tracking-widest mb-4">Our Expertise</h2>
               <h3 className="text-4xl font-bold text-brand-dark uppercase italic tracking-tighter">Produk & Instalasi</h3>
               <p className="text-slate-500 mt-4">Rangkaian solusi berkualitas tinggi untuk kebutuhan energi industri Anda.</p>
