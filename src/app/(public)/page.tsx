@@ -7,6 +7,8 @@ import HeroSlider from '@/components/layout/HeroSlider'
 import Reveal from '@/components/layout/Reveal'
 import { MessageCircle, Phone } from 'lucide-react' 
 import Link from 'next/link'
+// FITUR BARU: Import Announcement Bar
+import AnnouncementBar from '@/components/layout/AnnouncementBar'
 
 export default async function HomePage() {
   // 2. Fetch data Gallery
@@ -18,6 +20,9 @@ export default async function HomePage() {
 
   return (
     <main className="bg-white relative">
+      {/* FITUR BARU: Announcement Bar diletakkan di paling atas */}
+      <AnnouncementBar />
+
       {/* PASTIKAN: Di dalam komponen HeroSlider, tombol "LEARN MORE" 
           menggunakan tag <a href="#about-section"> agar scroll berfungsi.
       */}

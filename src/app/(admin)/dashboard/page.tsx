@@ -76,13 +76,25 @@ export default function DashboardPage() {
     if (selectedEmails.length === 0) return alert("Pilih minimal satu email!");
     
     setIsBroadcasting(true);
-    // Simulasi pengiriman (Integrasi API Email seperti Resend dilakukan di sini nantinya)
-    setTimeout(() => {
-      alert(`Berhasil! Pesan broadcast telah dikirim ke ${selectedEmails.length} penerima.`);
-      setIsBroadcasting(false);
+    try {
+      const { error } = await supabase
+        .from('announcements')
+        .insert([{ 
+          subject: broadcastForm.subject, 
+          message: broadcastForm.message,
+          target_emails: selectedEmails // Menyimpan daftar siapa saja yang mendapat pesan ini
+        }]);
+
+      if (error) throw error;
+
+      alert(`Pengumuman berhasil dipublish untuk ${selectedEmails.length} user!`);
       setBroadcastForm({ subject: '', message: '' });
       setSelectedEmails([]);
-    }, 2000);
+    } catch (err: any) {
+      alert("Gagal: " + err.message);
+    } finally {
+      setIsBroadcasting(false);
+    }
   };
 
   const uploadToStorage = async (file: File, folder: string) => {
