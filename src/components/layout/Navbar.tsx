@@ -3,7 +3,6 @@
 export default function Navbar() {
   return (
     <nav 
-      // Variabel ini diisi otomatis oleh AnnouncementBar.tsx
       style={{ top: 'var(--announcement-height, 0px)' }}
       className="sticky z-50 border-b bg-white/70 backdrop-blur-md transition-all duration-300"
     >
@@ -13,7 +12,8 @@ export default function Navbar() {
           <img 
             src="/Logo.jpeg" 
             alt="Logo Powerindo Jaya Nusantara" 
-            className="h-10 w-auto object-contain" 
+            // mix-blend-multiply menghilangkan latar putih pada logo jpeg di atas bg putih
+            className="h-10 w-auto object-contain mix-blend-multiply" 
           />
           <span className="text-xl font-bold text-brand-dark group-hover:text-brand-primary transition-colors">
             Powerindo Jaya Nusantara

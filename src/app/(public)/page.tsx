@@ -175,7 +175,7 @@ export default async function HomePage() {
           <Reveal>
             <h2 className="text-4xl md:text-7xl font-black text-white italic uppercase tracking-tighter mb-8 leading-none">
               Ready to Power Up Your <br />
-              <span className="text-[#2DC653]">Digital Infrastructure?</span>
+              <span className="text-[#2DC653]">Infrastructure?</span>
             </h2>
             <p className="text-slate-400 text-lg mb-12 max-w-2xl mx-auto">
               Konsultasikan kebutuhan infrastruktur listrik dan solusi energi perusahaan Anda bersama mitra teknologi terpercaya.
