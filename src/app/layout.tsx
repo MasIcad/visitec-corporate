@@ -12,16 +12,28 @@ const jakarta = Plus_Jakarta_Sans({
 
 // TAMBAHKAN KODE METADATA INI
 export const metadata: Metadata = {
-  title: "Powerindo Jaya Nusantara - Produk Lengap, Harga Terbaik",
-  description: "Kami perusahaan mechanical Electrical, yang memproduksi, merakit, distributor dan jasa engineering peralatan listrik",
-  keywords: ["Powerindojayanusantara", "Teknologi", "Mechanical Electrical Contractor", "Supplier", "Distributor" ],
+  title: "Powerindo Jaya Nusantara - Kontraktor & Distributor Alat Listrik",
+  description: "PT. Powerindo Jaya Nusantara: Spesialis Mechanical Electrical Contractor, perakitan trafo, distributor alat listrik, dan jasa engineering terpercaya di Indonesia.",
+  keywords: ["Powerindojayanusantara", "Teknologi", "Mechanical Electrical Contractor", "Supplier", "Distributor", "Indonesia", "Supplier Alat Listrik", "Jasa Engineering Listrik","PJN" ],
   authors: [{ name: "Powerindo Jaya Nusantara Team" }],
   openGraph: {
-    title: "Powerino Jaya Nusantara",
-    description: "Kami perusahaan mechanical Electrical, yang memproduksi, merakit, distributor dan jasa engineering peralatan listrik",
+    title: "Powerindo Jaya Nusantara | Integrated Electrical Solutions",
+    description: "Solusi infrastruktur listrik dan mekanikal terpadu. Produk lengkap dengan standar kualitas internasional.",
     url: "https://powerindojayanusantara.vercel.app/", // Ganti dengan domain asli jika sudah ada
     siteName: "Powerindo Jaya Nusantara",
+    images: [
+      {
+        url: "/Logo2.png", // Gambar yang akan muncul saat link dibagikan
+        width: 800,
+        height: 600,
+        alt: "Logo Powerindo Jaya Nusantara",
+      },
+    ],
     type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
