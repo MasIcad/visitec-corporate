@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { loginAction } from './action'
 import { Lock, Mail, Loader2 } from 'lucide-react'
+import { logoutAction } from './action'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
@@ -70,6 +71,12 @@ export default function LoginPage() {
           className="w-full bg-black text-white py-3 rounded flex justify-center"
         >
           {loading ? <Loader2 className="animate-spin" /> : 'Login'}
+        </button>
+        <button 
+          onClick={async () => await logoutAction()}
+          className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all"
+        >
+          Logout dari Sistem
         </button>
       </form>
     </div>
