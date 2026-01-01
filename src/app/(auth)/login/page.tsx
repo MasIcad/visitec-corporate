@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -9,14 +8,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -25,8 +23,8 @@ export default function LoginPage() {
       setError('Email atau Password salah!');
       setLoading(false);
     } else {
-      router.push('/dashboard'); // Langsung ke dashboard jika berhasil
-      router.refresh();
+      // PAKAI INI: Memaksa refresh total agar cookie terbaca Middleware
+      window.location.href = '/dashboard'; 
     }
   };
 
