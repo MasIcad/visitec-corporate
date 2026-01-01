@@ -26,25 +26,19 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Menggunakan getUser() untuk validasi keamanan di sisi server
-  const { data: { user } } = await supabase.auth.getUser()
+  // Gunakan getSession() sebagai alternatif getUser() yang kadang terlalu lambat membaca cookie baru
+  const { data: { session } } = await supabase.auth.getSession()
   const path = request.nextUrl.pathname
 
-  // --- LOGIKA PROTEKSI ---
+  // --- LOGIKA SEDERHANA (HANYA PROTEKSI ADMIN & DASHBOARD) ---
 
-  // 1. Jika mencoba akses area dashboard/admin tapi user tidak ditemukan (null)
-  const isProtectedPath = path.startsWith('/dashboard') || path.startsWith('/admin')
-  
-  if (!user && isProtectedPath) {
-    // Pastikan kita tidak berada di halaman login agar tidak terjadi loop
-    if (path !== '/login') {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
+  // Jika mencoba masuk ke folder rahasia tapi TIDAK ada sesi login
+  if (!session && (path.startsWith('/admin') || path.startsWith('/dashboard'))) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // 2. Jika sudah login (user ada) dan mencoba akses /login, pindahkan ke dashboard
-  if (user && path === '/login') {
-    // Gunakan path /dashboard sesuai preferensi keberhasilan kode lama kamu
+  // Jika SUDAH login tapi coba buka halaman login lagi
+  if (session && path === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
