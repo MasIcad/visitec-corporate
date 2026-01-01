@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation'; // TAMBAHAN
 import { 
   Plus, Package, Image as ImageIcon, Loader2, 
   Trash2, LayoutDashboard, FileText, Save, X, Tag, Pencil, RotateCcw, 
@@ -9,7 +10,7 @@ import {
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  // Update tipe activeTab untuk menyertakan 'projects'
+  const router = useRouter(); // TAMBAHAN
   const [activeTab, setActiveTab] = useState<'insight' | 'products' | 'gallery' | 'subscribers' | 'reviews' | 'projects'>('insight');
   const [loading, setLoading] = useState(false);
   
@@ -19,11 +20,10 @@ export default function DashboardPage() {
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
 
-  // --- STATE BARU UNTUK PROJECTS ---
   const [projects, setProjects] = useState<any[]>([]);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [projectForm, setProjectForm] = useState({ no: '', name: '', company: '', field: 'Elektrikal' });
-  const [csvText, setCsvText] = useState(''); // Untuk Bulk Import
+  const [csvText, setCsvText] = useState(''); 
   
   const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
   const [broadcastForm, setBroadcastForm] = useState({ subject: '', message: '', expires_at: '' });
@@ -49,7 +49,18 @@ export default function DashboardPage() {
 
   const [gallForm, setGallForm] = useState({ title: '', file: null as File | null });
 
-  useEffect(() => { fetchData(); }, []);
+  // --- UPDATE PADA USE EFFECT ---
+  useEffect(() => { 
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/login'); // Tendang jika tidak ada session
+      } else {
+        fetchData();
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   async function fetchData() {
     const { data: postsData } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
@@ -57,7 +68,6 @@ export default function DashboardPage() {
     const { data: gallData } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
     const { data: subData } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
     const { data: revData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
-    // Fetch Project Experience
     const { data: projData } = await supabase.from('project_experience').select('*').order('project_no', { ascending: false });
     
     if (postsData) setPosts(postsData);
@@ -68,7 +78,6 @@ export default function DashboardPage() {
     if (projData) setProjects(projData);
   }
 
-  // --- LOGIKA PROJECTS (BARU) ---
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -100,7 +109,7 @@ export default function DashboardPage() {
     try {
       const rows = csvText.trim().split('\n');
       const dataToInsert = rows.map(row => {
-        const [no, name, company, field] = row.split(';'); // Menggunakan separator semicolon
+        const [no, name, company, field] = row.split(';');
         return {
           project_no: parseInt(no.trim()),
           project_name: name.trim(),
@@ -119,7 +128,6 @@ export default function DashboardPage() {
     finally { setLoading(false); }
   };
 
-  // --- LOGIKA REVIEWS ---
   const handleApproveReview = async (id: string, currentStatus: boolean) => {
     const { error } = await supabase.from('reviews').update({ is_approved: !currentStatus }).eq('id', id);
     if (!error) fetchData();
@@ -140,7 +148,6 @@ export default function DashboardPage() {
     }
   };
 
-  // --- LOGIKA BROADCAST ---
   const toggleSelect = (email: string) => {
     if (selectedEmails.includes(email)) {
       setSelectedEmails(selectedEmails.filter(e => e !== email));
@@ -302,7 +309,7 @@ export default function DashboardPage() {
             { id: 'insight', label: 'Insights', icon: LayoutDashboard },
             { id: 'products', label: 'Produk', icon: Package },
             { id: 'gallery', label: 'Gallery', icon: ImageIcon },
-            { id: 'projects', label: 'Projects', icon: Briefcase }, // Tab Project baru
+            { id: 'projects', label: 'Projects', icon: Briefcase }, 
             { id: 'subscribers', label: 'Leads', icon: Users },
             { id: 'reviews', label: 'Reviews', icon: MessageSquare },
           ].map((tab) => (
@@ -480,11 +487,9 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* --- TAB PROJECTS (BARU) --- */}
       {activeTab === 'projects' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-1 space-y-8">
-            {/* Form Input Satuan */}
             <div className="bg-white p-8 rounded-4xl shadow-xl border border-slate-100">
               <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
                 <Hash className="text-brand-primary" /> {editingProjectId ? 'Edit Project' : 'Tambah Project'}
@@ -508,7 +513,6 @@ export default function DashboardPage() {
               </form>
             </div>
 
-            {/* Form Bulk Import */}
             <div className="bg-brand-dark p-8 rounded-4xl shadow-xl text-white">
                <h3 className="text-xl font-bold mb-4 flex items-center gap-3 italic"><FileUp className="text-brand-primary" /> Bulk Import CSV</h3>
                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">Format: No;Nama;Client;Bidang (Gunakan Titik Koma)</p>

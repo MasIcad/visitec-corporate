@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Pastikan namanya 'proxy' bukan 'middleware'
+// NAMA HARUS 'proxy' agar terbaca oleh Next.js
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: { headers: request.headers },
@@ -29,14 +29,20 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Jika sudah login, paksa pindah ke dashboard
+  // LOGIKA 1: Jika sudah login, paksa pindah ke dashboard saat buka /login
   if (user && request.nextUrl.pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+  }
+
+  // LOGIKA 2 (TAMBAHAN): Jika BELUM login & mencoba akses folder /admin, paksa ke /login
+  if (!user && request.nextUrl.pathname.startsWith('/admin')) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return response
 }
 
 export const config = {
+  // Lindungi semua rute kecuali yang diabaikan (assets, api, dll)
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }
