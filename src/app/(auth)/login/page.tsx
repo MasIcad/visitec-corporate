@@ -23,7 +23,8 @@ export default function LoginPage() {
       setError('Email atau Password salah!');
       setLoading(false);
     } else {
-      // PAKAI INI: Memaksa refresh total agar cookie terbaca Middleware
+      // JANGAN GUNAKAN router.push() jika middleware masih menendang.
+      // window.location.href adalah solusi paling ampuh untuk sinkronisasi cookie.
       window.location.href = '/dashboard'; 
     }
   };

@@ -6,7 +6,6 @@ export async function middleware(request: NextRequest) {
     request: { headers: request.headers },
   })
 
-  // LOGIKA COOKIE LAMA ANDA (YANG STABIL)
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,22 +26,25 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // Menggunakan getUser() untuk validasi keamanan di sisi server
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
 
-  // --- LOGIKA PROTEKSI TANPA LOOP ---
+  // --- LOGIKA PROTEKSI ---
 
-  // 1. Jika BELUM login & mencoba akses area dashboard/admin
-  const isProtectedPath = path.startsWith('/dashboard') || path.startsWith('/admin');
+  // 1. Jika mencoba akses area dashboard/admin tapi user tidak ditemukan (null)
+  const isProtectedPath = path.startsWith('/dashboard') || path.startsWith('/admin')
+  
   if (!user && isProtectedPath) {
-    // Pastikan tidak me-redirect jika memang sudah berada di /login
+    // Pastikan kita tidak berada di halaman login agar tidak terjadi loop
     if (path !== '/login') {
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }
 
-  // 2. Jika SUDAH login & mencoba buka /login, lempar ke /dashboard
+  // 2. Jika sudah login (user ada) dan mencoba akses /login, pindahkan ke dashboard
   if (user && path === '/login') {
+    // Gunakan path /dashboard sesuai preferensi keberhasilan kode lama kamu
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
