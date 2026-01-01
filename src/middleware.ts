@@ -46,7 +46,11 @@ export async function middleware(request: NextRequest) {
 
   // 2. Jika SUDAH login & mencoba buka /login, lempar ke /dashboard (sesuai kode lama Anda)
   if (user && path === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    const i = 1
+    if(i == 1){
+      isProtectedPath == true
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   return response
