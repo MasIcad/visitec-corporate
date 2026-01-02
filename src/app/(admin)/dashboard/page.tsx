@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const router = useRouter(); 
   const [activeTab, setActiveTab] = useState<'insight' | 'products' | 'gallery' | 'subscribers' | 'reviews' | 'projects'>('insight');
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null); // State User untuk RLS
   
   const [posts, setPosts] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -50,44 +51,40 @@ export default function DashboardPage() {
 
   const [gallForm, setGallForm] = useState({ title: '', file: null as File | null });
 
-  // --- FIX PADA USE EFFECT (SINKRONISASI SESI) ---
+  // --- LOGIKA AUTH SINKRON ---
   useEffect(() => { 
-    const checkAuthAndFetch = async () => {
-      // Pastikan token auth terpasang di client sebelum fetch data
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-          fetchData();
-        }
-        if (event === 'SIGNED_OUT') {
-          router.push('/login');
-        }
-      });
-
+    const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
       if (!session) {
-        router.push('/login'); 
+        router.push('/login');
       } else {
-        await fetchData();
+        setCurrentUser(session.user);
+        fetchData();
       }
-
-      return () => subscription.unsubscribe();
     };
-    
-    checkAuthAndFetch();
+
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setCurrentUser(session.user);
+      } else {
+        router.push('/login');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
   async function fetchData() {
     setLoading(true); 
-    const { data: postsData, error: postsErr } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
-    const { data: prodData, error: prodErr } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    const { data: gallData, error: gallErr } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
-    const { data: subData, error: subErr } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
-    const { data: revData, error: revErr } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
-    const { data: projData, error: projErr } = await supabase.from('project_experience').select('*').order('project_no', { ascending: false });
+    const { data: postsData } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+    const { data: prodData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+    const { data: gallData } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
+    const { data: subData } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
+    const { data: revData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+    const { data: projData } = await supabase.from('project_experience').select('*').order('project_no', { ascending: false });
     
-    console.log("Data Posts:", postsData, "Error:", postsErr);
-
     if (postsData) setPosts(postsData);
     if (prodData) setProducts(prodData);
     if (gallData) setGallery(gallData);
@@ -97,6 +94,88 @@ export default function DashboardPage() {
     
     setLoading(false);
   }
+
+  const uploadToStorage = async (file: File, folder: string) => {
+    const fileName = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
+    const filePath = `${folder}/${fileName}`;
+    const { error } = await supabase.storage.from('visitec-assets').upload(filePath, file);
+    if (error) throw error;
+    return supabase.storage.from('visitec-assets').getPublicUrl(filePath).data.publicUrl;
+  };
+
+  // --- HANDLER POST (INSIGHT) ---
+  const handleAddPost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return alert("Sesi tidak ditemukan, silakan refresh.");
+    setLoading(true);
+    try {
+      let imageUrls: string[] = [...postForm.existingImages];
+      if (postForm.files.length > 0) {
+        for (const file of postForm.files) {
+          const url = await uploadToStorage(file, 'blog');
+          imageUrls.push(url);
+        }
+      }
+      if (imageUrls.length === 0) throw new Error("Artikel wajib memiliki minimal 1 foto.");
+      
+      const postData = { 
+        title: postForm.title, 
+        content: { body: postForm.content, gallery: imageUrls },
+        image_url: imageUrls[0] || '',
+        slug: postForm.title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-'),
+        author_id: currentUser.id 
+      };
+
+      if (editingPostId) {
+        const { error } = await supabase.from('posts').update(postData).eq('id', editingPostId);
+        if (error) throw error;
+        alert('Artikel Berhasil Diperbarui!');
+      } else {
+        const { error } = await supabase.from('posts').insert([postData]);
+        if (error) throw error;
+        alert('Artikel Berhasil Dipublish!');
+      }
+      setPostForm({ title: '', content: '', files: [], existingImages: [] });
+      setEditingPostId(null);
+      fetchData();
+    } catch (err: any) { alert(err.message); }
+    finally { setLoading(false); }
+  };
+
+  // --- HANDLER PRODUK ---
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return alert("Sesi tidak ditemukan.");
+    if (!editingProdId && prodForm.files.length === 0) return alert('Pilih minimal 1 gambar produk!');
+    if (!prodForm.category) return alert('Pilih kategori produk!');
+    setLoading(true);
+    try {
+      let imageUrls: string[] = [...prodForm.existingImages];
+      if (prodForm.files.length > 0) {
+        for (const file of prodForm.files) {
+          const url = await uploadToStorage(file, 'products');
+          imageUrls.push(url);
+        }
+      }
+      const productData = { 
+        name: prodForm.name, description: prodForm.desc, price: parseFloat(prodForm.price), 
+        category: prodForm.category, image_url: imageUrls[0], images: imageUrls          
+      };
+      if (editingProdId) {
+        const { error } = await supabase.from('products').update(productData).eq('id', editingProdId);
+        if (error) throw error;
+        alert('Produk Berhasil Diperbarui!');
+      } else {
+        const { error } = await supabase.from('products').insert([productData]);
+        if (error) throw error;
+        alert('Produk Berhasil Ditambahkan!');
+      }
+      setProdForm({ name: '', desc: '', price: '', category: '', files: [], existingImages: [] });
+      setEditingProdId(null);
+      fetchData();
+    } catch (err: any) { alert("Gagal: " + err.message); }
+    finally { setLoading(false); }
+  };
 
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,10 +189,12 @@ export default function DashboardPage() {
       };
 
       if (editingProjectId) {
-        await supabase.from('project_experience').update(pData).eq('id', editingProjectId);
+        const { error } = await supabase.from('project_experience').update(pData).eq('id', editingProjectId);
+        if (error) throw error;
         alert('Proyek Berhasil Diperbarui!');
       } else {
-        await supabase.from('project_experience').insert([pData]);
+        const { error } = await supabase.from('project_experience').insert([pData]);
+        if (error) throw error;
         alert('Proyek Berhasil Ditambahkan!');
       }
       setProjectForm({ no: '', name: '', company: '', field: 'Elektrikal' });
@@ -187,37 +268,19 @@ export default function DashboardPage() {
   const handleSendBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsBroadcasting(true);
-
     try {
-      const expiryDate = broadcastForm.expires_at 
-        ? new Date(broadcastForm.expires_at).toISOString() 
-        : null;
-
-      const { error } = await supabase
-        .from('announcements')
-        .insert([{ 
+      const expiryDate = broadcastForm.expires_at ? new Date(broadcastForm.expires_at).toISOString() : null;
+      const { error } = await supabase.from('announcements').insert([{ 
           subject: broadcastForm.subject, 
           message: broadcastForm.message,
           target_emails: selectedEmails,
           expires_at: expiryDate 
         }]);
-
       if (error) throw error;
       alert("Broadcast Berhasil Dipublish!");
       setBroadcastForm({ subject: '', message: '', expires_at: '' });
-    } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setIsBroadcasting(false);
-    }
-  };
-
-  const uploadToStorage = async (file: File, folder: string) => {
-    const fileName = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
-    const filePath = `${folder}/${fileName}`;
-    const { error } = await supabase.storage.from('visitec-assets').upload(filePath, file);
-    if (error) throw error;
-    return supabase.storage.from('visitec-assets').getPublicUrl(filePath).data.publicUrl;
+    } catch (err: any) { alert(err.message); } 
+    finally { setIsBroadcasting(false); }
   };
 
   const handleEditPostClick = (post: any) => {
@@ -231,46 +294,6 @@ export default function DashboardPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // --- FIX: HANDLE ADD POST DENGAN AUTHOR_ID ---
-  const handleAddPost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      // 1. Ambil ID Admin yang sedang login agar tidak Violates Policy
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Sesi berakhir, silakan login ulang.");
-
-      let imageUrls: string[] = [...postForm.existingImages];
-      if (postForm.files.length > 0) {
-        for (const file of postForm.files) {
-          const url = await uploadToStorage(file, 'blog');
-          imageUrls.push(url);
-        }
-      }
-      if (imageUrls.length === 0) throw new Error("Artikel wajib memiliki minimal 1 foto.");
-      
-      const postData = { 
-        title: postForm.title, 
-        content: { body: postForm.content, gallery: imageUrls },
-        image_url: imageUrls[0] || '',
-        slug: postForm.title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-'),
-        author_id: user.id // <-- TAMBAHAN: Mengirim ID Penulis
-      };
-
-      if (editingPostId) {
-        await supabase.from('posts').update(postData).eq('id', editingPostId);
-        alert('Artikel Berhasil Diperbarui!');
-      } else {
-        await supabase.from('posts').insert([postData]);
-        alert('Artikel Berhasil Dipublish!');
-      }
-      setPostForm({ title: '', content: '', files: [], existingImages: [] });
-      setEditingPostId(null);
-      fetchData();
-    } catch (err: any) { alert(err.message); }
-    finally { setLoading(false); }
-  };
-
   const handleEditProdClick = (p: any) => {
     setEditingProdId(p.id);
     setProdForm({
@@ -280,44 +303,14 @@ export default function DashboardPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleAddProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingProdId && prodForm.files.length === 0) return alert('Pilih minimal 1 gambar produk!');
-    if (!prodForm.category) return alert('Pilih kategori produk!');
-    setLoading(true);
-    try {
-      let imageUrls: string[] = [...prodForm.existingImages];
-      if (prodForm.files.length > 0) {
-        for (const file of prodForm.files) {
-          const url = await uploadToStorage(file, 'products');
-          imageUrls.push(url);
-        }
-      }
-      const productData = { 
-        name: prodForm.name, description: prodForm.desc, price: parseFloat(prodForm.price), 
-        category: prodForm.category, image_url: imageUrls[0], images: imageUrls          
-      };
-      if (editingProdId) {
-        await supabase.from('products').update(productData).eq('id', editingProdId);
-        alert('Produk Berhasil Diperbarui!');
-      } else {
-        await supabase.from('products').insert([productData]);
-        alert('Produk Berhasil Ditambahkan!');
-      }
-      setProdForm({ name: '', desc: '', price: '', category: '', files: [], existingImages: [] });
-      setEditingProdId(null);
-      fetchData();
-    } catch (err: any) { alert("Gagal: " + err.message); }
-    finally { setLoading(false); }
-  };
-
   const handleAddGallery = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!gallForm.file) return alert('Pilih foto gallery!');
     setLoading(true);
     try {
       const url = await uploadToStorage(gallForm.file, 'gallery');
-      await supabase.from('gallery').insert([{ title: gallForm.title, image_url: url }]);
+      const { error } = await supabase.from('gallery').insert([{ title: gallForm.title, image_url: url }]);
+      if (error) throw error;
       alert('Berhasil ditambahkan ke Gallery!');
       setGallForm({ title: '', file: null });
       fetchData();
@@ -555,13 +548,13 @@ export default function DashboardPage() {
                <h3 className="text-xl font-bold mb-4 flex items-center gap-3 italic"><FileUp className="text-brand-primary" /> Bulk Import CSV</h3>
                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">Format: No;Nama;Client;Bidang (Gunakan Titik Koma)</p>
                <textarea 
-                  placeholder="143;Pengadaan Kabel;PT. MEGA BINTANG;Elektrikal" 
-                  className="w-full h-32 p-4 bg-white/5 border border-white/10 rounded-2xl outline-none text-xs focus:border-brand-primary transition-all mb-4"
-                  value={csvText}
-                  onChange={e => setCsvText(e.target.value)}
+                 placeholder="143;Pengadaan Kabel;PT. MEGA BINTANG;Elektrikal" 
+                 className="w-full h-32 p-4 bg-white/5 border border-white/10 rounded-2xl outline-none text-xs focus:border-brand-primary transition-all mb-4"
+                 value={csvText}
+                 onChange={e => setCsvText(e.target.value)}
                />
                <button onClick={handleBulkImport} disabled={loading} className="w-full py-3 bg-white text-brand-dark font-black rounded-xl text-[10px] uppercase tracking-[0.2em] hover:bg-brand-primary hover:text-white transition-all">
-                  {loading ? 'Processing...' : 'Proses Bulk Import'}
+                 {loading ? 'Processing...' : 'Proses Bulk Import'}
                </button>
             </div>
           </div>
