@@ -12,7 +12,7 @@ import LogoutButton from '@/components/LogoutButton'
 
 export default function DashboardPage() {
   const router = useRouter(); 
-  const [activeTab, setActiveTab] = useState<'insight' | 'products' | 'gallery' | 'subscribers' | 'reviews' | 'projects'>('insight');
+  const [activeTab, setActiveTab] = useState<'insight' | 'products' | 'gallery' | 'subscribers' | 'projects'>('insight');
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   
@@ -20,7 +20,6 @@ export default function DashboardPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [gallery, setGallery] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<any[]>([]);
-  const [reviews, setReviews] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
 
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
@@ -85,7 +84,6 @@ export default function DashboardPage() {
       if (prodD.data) setProducts(prodD.data);
       if (gallD.data) setGallery(gallD.data);
       if (subD.data) setSubscribers(subD.data);
-      if (revD.data) setReviews(revD.data);
       if (projD.data) setProjects(projD.data);
     } catch (error) {
       console.error("Fetch error:", error);
@@ -206,23 +204,6 @@ export default function DashboardPage() {
     finally { setLoading(false); }
   };
 
-  const handleApproveReview = async (id: string, currentStatus: boolean) => {
-    await supabase.from('reviews').update({ is_approved: !currentStatus }).eq('id', id);
-    fetchData();
-  };
-
-  const handleReplyReview = async (id: string) => {
-    await supabase.from('reviews').update({ reply: replyInput[id] }).eq('id', id);
-    fetchData();
-  };
-
-  const handleDeleteReview = async (id: string) => {
-    if (confirm('Hapus review ini?')) {
-      await supabase.from('reviews').delete().eq('id', id);
-      fetchData();
-    }
-  };
-
   const toggleSelect = (email: string) => {
     setSelectedEmails(prev => prev.includes(email) ? prev.filter(e => e !== email) : [...prev, email]);
   };
@@ -292,7 +273,6 @@ export default function DashboardPage() {
               { id: 'gallery', label: 'Gallery', icon: ImageIcon },
               { id: 'projects', label: 'Projects', icon: Briefcase }, 
               { id: 'subscribers', label: 'Leads', icon: Users },
-              { id: 'reviews', label: 'Reviews', icon: MessageSquare },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -634,58 +614,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {activeTab === 'reviews' && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-black text-brand-dark uppercase italic tracking-tighter flex items-center gap-3">
-              <MessageSquare className="text-brand-primary" /> Customer Feedback
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 gap-6">
-            {reviews.map((rev) => (
-              <div key={rev.id} className="bg-white p-8 rounded-4xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-8">
-                <div className="flex-1 space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-bold text-xl text-brand-dark">{rev.name}</h4>
-                      <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{rev.company || 'Personal Client'}</p>
-                    </div>
-                    <div className="flex gap-1 bg-slate-50 p-2 rounded-xl">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={16} className={i < rev.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'} />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-slate-600 italic text-lg leading-relaxed">"{rev.comment}"</p>
-                  <div className="pt-4 border-t border-slate-50">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Admin Reply</p>
-                    {rev.reply ? (
-                      <div className="bg-brand-dark/5 p-4 rounded-2xl border-l-4 border-brand-primary">
-                        <p className="text-sm italic text-brand-dark font-medium">{rev.reply}</p>
-                        <button onClick={() => setReplyInput({ ...replyInput, [rev.id]: rev.reply })} className="text-[10px] text-brand-primary font-bold mt-2 uppercase underline">Edit Balasan</button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <input type="text" placeholder="Tulis balasan profesional..." className="flex-1 bg-slate-50 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-brand-primary/20" value={replyInput[rev.id] || ''} onChange={(e) => setReplyInput({ ...replyInput, [rev.id]: e.target.value })} />
-                        <button onClick={() => handleReplyReview(rev.id)} className="bg-brand-primary text-white px-4 rounded-xl hover:bg-brand-primary/90 transition-colors"><Send size={16}/></button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="md:w-48 flex flex-col gap-2">
-                  <button onClick={() => handleApproveReview(rev.id, rev.is_approved)} className={`w-full py-3 rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${rev.is_approved ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-brand-primary text-white shadow-lg'}`}>
-                    {rev.is_approved ? <CheckCircle size={16}/> : <Plus size={16}/>} {rev.is_approved ? 'Approved' : 'Approve'}
-                  </button>
-                  <button onClick={() => handleDeleteReview(rev.id)} className="w-full py-3 bg-red-50 text-red-500 border border-red-100 rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition-all">
-                    <Trash2 size={16}/> Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-            {reviews.length === 0 && <div className="py-20 text-center text-slate-400 italic">Belum ada review masuk.</div>}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
