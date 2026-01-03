@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, MessageCircle, ShieldCheck, Truck, Clock } from 'lucide-react'
+import { ArrowLeft, MessageCircle, ShieldCheck, Truck, Clock, PackageCheck } from 'lucide-react'
 import Link from 'next/link'
 import Reveal from '@/components/layout/Reveal'
 import ProductView from '@/components/product/ProductImage'
@@ -74,7 +74,7 @@ export default async function ProductDetailPage(props: {
                   <span className="text-[10px] font-bold uppercase tracking-wider">PENGIRIMAN AMAN</span>
                 </div>
                 <div className="flex items-center gap-3 text-slate-600">
-                  <Clock className="text-brand-primary" size={20} /> 
+                  <PackageCheck className="text-brand-primary" size={20} /> 
                   <span className="text-[10px] font-bold uppercase tracking-wider">100% ORIGINAL</span>
                 </div>
               </div>
