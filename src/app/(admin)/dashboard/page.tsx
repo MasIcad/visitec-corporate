@@ -35,11 +35,11 @@ export default function DashboardPage() {
   const [editingProdId, setEditingProdId] = useState<string | null>(null);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
 
-  const [prodForm, setProdForm] = useState({ name: '', desc: '', price: '', category: '', files: [] as File[], existingImages: [] as string[] });
+  // --- HARGA DIHAPUS DARI STATE FORM ---
+  const [prodForm, setProdForm] = useState({ name: '', desc: '', category: '', files: [] as File[], existingImages: [] as string[] });
   const [postForm, setPostForm] = useState({ title: '', content: '', files: [] as File[], existingImages: [] as string[] });
   const [gallForm, setGallForm] = useState({ title: '', file: null as File | null });
 
-  // CSS tambahan untuk scrollbar tipis
   const scrollbarStyle = "scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent";
 
   useEffect(() => { 
@@ -140,16 +140,21 @@ export default function DashboardPage() {
           imageUrls.push(url);
         }
       }
+      // --- HARGA DIHAPUS DARI OBJEK DATA ---
       const productData = { 
-        name: prodForm.name, description: prodForm.desc, price: parseFloat(prodForm.price), 
-        category: prodForm.category, image_url: imageUrls[0], images: imageUrls 
+        name: prodForm.name, 
+        description: prodForm.desc, 
+        category: prodForm.category, 
+        image_url: imageUrls[0], 
+        images: imageUrls 
       };
+
       if (editingProdId) {
         await supabase.from('products').update(productData).eq('id', editingProdId);
       } else {
         await supabase.from('products').insert([productData]);
       }
-      setProdForm({ name: '', desc: '', price: '', category: '', files: [], existingImages: [] });
+      setProdForm({ name: '', desc: '', category: '', files: [], existingImages: [] });
       setEditingProdId(null);
       fetchData();
       alert('Produk berhasil disimpan!');
@@ -220,7 +225,14 @@ export default function DashboardPage() {
 
   const handleEditProdClick = (p: any) => {
     setEditingProdId(p.id);
-    setProdForm({ name: p.name, desc: p.description, price: p.price.toString(), category: p.category, files: [], existingImages: p.images || [p.image_url] });
+    // --- HARGA DIHAPUS DARI LOGIKA EDIT ---
+    setProdForm({ 
+      name: p.name, 
+      desc: p.description, 
+      category: p.category, 
+      files: [], 
+      existingImages: p.images || [p.image_url] 
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -240,7 +252,6 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-24 bg-slate-50 min-h-screen">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
         <div className="flex justify-between items-start w-full md:w-auto gap-6">
           <div>
@@ -278,7 +289,6 @@ export default function DashboardPage() {
       {activeTab === 'insight' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-2">
-            {/* Scrollable Left Panel */}
             <div className={`bg-white p-10 rounded-4xl shadow-xl border border-slate-100 sticky top-32 max-h-[calc(100vh-180px)] overflow-y-auto ${scrollbarStyle}`}>
               <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
                 <FileText className="text-brand-primary" /> {editingPostId ? 'Edit Artikel' : 'Tulis Artikel Baru'}
@@ -340,7 +350,6 @@ export default function DashboardPage() {
       {activeTab === 'products' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-1">
-            {/* Scrollable Left Panel */}
             <div className={`bg-white p-8 rounded-4xl shadow-xl border border-slate-100 sticky top-32 max-h-[calc(100vh-180px)] overflow-y-auto ${scrollbarStyle}`}>
               <h2 className="text-2xl font-bold mb-8">{editingProdId ? 'Edit Produk' : 'Tambah Produk'}</h2>
               <form onSubmit={handleAddProduct} className="space-y-5">
@@ -349,7 +358,7 @@ export default function DashboardPage() {
                   <option value="" disabled>Pilih Kategori Produk</option>
                   {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                 </select>
-                <input type="number" placeholder="Harga" required className="w-full p-4 bg-slate-50 rounded-2xl outline-none" value={prodForm.price} onChange={e => setProdForm({...prodForm, price: e.target.value})} />
+                {/* INPUT HARGA DIHAPUS */}
                 <textarea placeholder="Deskripsi..." required className="w-full p-4 bg-slate-50 rounded-2xl outline-none h-32" value={prodForm.desc} onChange={e => setProdForm({...prodForm, desc: e.target.value})} />
                 <div className="space-y-4">
                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Foto Produk</p>
@@ -376,7 +385,7 @@ export default function DashboardPage() {
                         {loading ? <Loader2 className="animate-spin" /> : editingProdId ? <Save size={18}/> : <Plus />} {editingProdId ? 'Update Produk' : 'Publish Produk'}
                     </button>
                     {editingProdId && (
-                        <button type="button" onClick={() => { setEditingProdId(null); setProdForm({name:'', desc:'', price:'', category:'', files:[], existingImages:[]})}} className="w-full py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl flex justify-center items-center gap-2"><RotateCcw size={18}/> Batal</button>
+                        <button type="button" onClick={() => { setEditingProdId(null); setProdForm({name:'', desc:'', category:'', files:[], existingImages:[]})}} className="w-full py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl flex justify-center items-center gap-2"><RotateCcw size={18}/> Batal</button>
                     )}
                 </div>
               </form>
@@ -391,7 +400,7 @@ export default function DashboardPage() {
                    <div>
                      <span className="bg-blue-50 text-brand-primary text-[10px] font-black px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-tighter"><Tag size={10} className="inline mr-1"/>{p.category || 'N/A'}</span>
                      <h4 className="font-bold text-lg text-brand-dark mt-1">{p.name}</h4>
-                     <p className="text-brand-primary font-black">Rp {Number(p.price).toLocaleString('id-ID')}</p>
+                     {/* TAMPILAN HARGA DI LIST DIHAPUS */}
                    </div>
                  </div>
                  <div className="flex gap-2">
@@ -407,7 +416,6 @@ export default function DashboardPage() {
       {activeTab === 'gallery' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-1">
-            {/* Scrollable Left Panel */}
             <div className={`bg-white p-8 rounded-4xl shadow-xl border border-slate-100 sticky top-32 max-h-[calc(100vh-180px)] overflow-y-auto ${scrollbarStyle}`}>
               <h2 className="text-2xl font-bold mb-8">Add to Gallery</h2>
               <form onSubmit={handleAddGallery} className="space-y-6">
@@ -444,7 +452,6 @@ export default function DashboardPage() {
       {activeTab === 'projects' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="lg:col-span-1">
-            {/* Scrollable Left Panel */}
             <div className={`space-y-8 sticky top-32 max-h-[calc(100vh-180px)] overflow-y-auto pr-2 ${scrollbarStyle}`}>
               <div className="bg-white p-8 rounded-4xl shadow-xl border border-slate-100">
                 <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
@@ -491,7 +498,6 @@ export default function DashboardPage() {
                   <h3 className="font-bold text-brand-dark uppercase text-xs tracking-widest">Master Project List</h3>
                   <span className="text-[10px] font-black text-brand-primary bg-blue-50 px-3 py-1 rounded-full border border-blue-100">{projects.length} Total Data</span>
                </div>
-               {/* Membatasi tinggi tabel agar tidak memanjang kebawah saat scroll */}
                <div className={`max-h-150 overflow-y-auto ${scrollbarStyle}`}>
                   <table className="w-full text-left">
                     <thead className="bg-slate-100/50 sticky top-0 z-10 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">
