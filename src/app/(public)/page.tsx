@@ -80,7 +80,7 @@ export default async function HomePage() {
               <div className="max-w-2xl">
                 <h2 className="text-sm font-bold text-brand-primary uppercase tracking-[0.3em] mb-4">Our Expertise</h2>
                 <h3 className="text-4xl md:text-5xl font-bold text-brand-dark leading-tight">
-                  Integrated Solutions for High-Scale Enterprise.
+                  Integrated Solutions for Business & Industry.
                 </h3>
               </div>
               {/* PERBAIKAN: Link diarahkan ke ID di halaman About */}
@@ -98,17 +98,17 @@ export default async function HomePage() {
               { 
                 title: 'Mechanical Electrical Contractor', 
                 icon: '01',
-                desc: 'Layanan instalasi, pemeliharaan, dan integrasi sistem mekanikal elektrikal skala industri yang presisi, aman, dan memenuhi standar internasional.'
+                desc: 'Layanan instalasi, pemeliharaan, dan integrasi sistem mekanikal dan elektrikal yang dirancang untuk mendukung keandalan, keselamatan, dan kinerja operasional sesuai standar yang berlaku.'
               },
               { 
                 title: 'Supplier', 
                 icon: '02',
-                desc: 'Penyedia komponen elektrikal dan infrastruktur digital berkualitas tinggi dari brand ternama untuk menjamin keandalan operasional bisnis Anda.'
+                desc: 'Penyedia komponen dan sistem kelistrikan berkualitas tinggi dengan pilihan produk yang lengkap dan ketersediaan yang terjaga untuk mendukung kebutuhan proyek dan operasional bisnis.'
               },
               { 
                 title: 'Distributor', 
                 icon: '03',
-                desc: 'Distributor resmi perangkat teknologi dan sistem otomasi terintegrasi yang memastikan rantai pasok dan distribusi proyek Anda berjalan tanpa hambatan.'
+                desc: 'Mitra distribusi produk kelistrikan yang memastikan keaslian konsistensi pasokan, dan kelancaran distribusi untuk mendukung pelaksanaan proyek secara optimal.'
               }
             ].map((item, i) => (
               <div key={i} className="h-full">
