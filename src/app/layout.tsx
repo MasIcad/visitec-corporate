@@ -5,6 +5,7 @@ import SmoothScroll from "@/components/layout/SmoothScroll";
 import Footer from "@/components/layout/Footer";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Metadata } from "next";
+import PageTransition from "@/components/layout/PageTransition";
 
 // Konfigurasi Font
 const jakarta = Plus_Jakarta_Sans({ 
@@ -50,7 +51,7 @@ export default function RootLayout({
       <body className={`${jakarta.variable} ${jakarta.className} antialiased`}>
         <SmoothScroll>
           <Navbar />
-          <main>{children}</main>
+          <PageTransition>{children}</PageTransition>
           <Footer />
         </SmoothScroll>
 
