@@ -18,8 +18,8 @@ const slides = [
   },
   {
     // Visual: Jaringan Distribusi
-    image: '',
-    title: '/RedGen.jpeg',
+    image: '/RedGen.jpeg',
+    title: 'TRUSTED AUTHORIZED SUPPLIER',
     desc: 'Penyedia distribusi sistem dan perangkat kelistrikan dengan standar kualitas tinggi serta jaminan keaslian produk.'
   },
   {
