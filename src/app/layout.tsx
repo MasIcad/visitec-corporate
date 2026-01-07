@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Powerindo Jaya Nusantara - Kontraktor & Distributor Alat Listrik",
   description: "Spesialis Mechanical Electrical Contractor, perakitan trafo, dan distributor resmi Schneider di Indonesia.",
   // Metadata keywords bisa tetap ada, tapi jangan terlalu berharap banyak di sini
-  keywords: ["Mechanical Electrical", "Schneider Indonesia", "Trafo Trafindo"], 
+  keywords: ["Mechanical Electrical Contractor - Powerindo Jaya Nusantara", "Distributor Resmi Schneider Indonesia - Powerindo Jaya Nusantara", "Trafo Cubicle - Powerindo Jaya Nusantara"], 
   openGraph: {
     title: "Powerindo Jaya Nusantara | Kontraktor Listrik Terpercaya",
     description: "Solusi infrastruktur listrik dan mekanikal terpadu standar internasional.",
