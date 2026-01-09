@@ -51,7 +51,7 @@ export default function AnnouncementBar() {
         initial={{ height: 0, opacity: 0 }}
         animate={{ height: '40px', opacity: 1 }}
         exit={{ height: 0, opacity: 0 }}
-        className="fixed top-0 left-0 w-full z-9999] bg-brand-primary text-white flex items-center shadow-md overflow-hidden"
+        className="fixed top-0 left-0 w-full z-9999 bg-brand-primary text-white flex items-center shadow-md overflow-hidden"
       >
         <div className="max-w-7xl mx-auto w-full px-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 overflow-hidden">

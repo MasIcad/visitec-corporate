@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   description: "Spesialis Mechanical Electrical Contractor, perakitan trafo, dan distributor resmi Schneider di Indonesia.",
   // Metadata keywords bisa tetap ada, tapi jangan terlalu berharap banyak di sini
   keywords: ["Mechanical Electrical Contractor - Powerindo Jaya Nusantara", "Distributor Resmi Schneider Indonesia - Powerindo Jaya Nusantara", "Trafo Cubicle - Powerindo Jaya Nusantara"], 
+  icons: {
+    icon: "/favicon.ico", // Standar browser
+    shortcut: "/Logo2.png", // Bisa menggunakan file PNG logo Anda
+    apple: "/Logo2.png", // Untuk tampilan di perangkat iOS
+  },
   openGraph: {
     title: "Powerindo Jaya Nusantara | Kontraktor Listrik Terpercaya",
     description: "Solusi infrastruktur listrik dan mekanikal terpadu standar internasional.",
